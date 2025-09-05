@@ -6,6 +6,15 @@ Enterprise-grade analytics dashboard with real-time updates,
 advanced filtering, and comprehensive reporting.
 """
 
+import sys
+from pathlib import Path
+
+# Ensure project root is on sys.path so `import src.*` works even when invoked as
+# `python src/dashboard/dashboard_app.py` (Render runs this form).
+project_root = Path(__file__).resolve().parents[2]
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
 import dash
 from dash import dcc, html, dash_table, Input, Output, State, callback_context
 import plotly.graph_objs as go
