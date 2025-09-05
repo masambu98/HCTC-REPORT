@@ -151,13 +151,24 @@ class Config:
         return True
     
     def get_database_url(self) -> str:
-        """Get database URL with proper formatting for different environments."""
+        """Get database URL with proper formatting for different environments.
+        Also normalize the driver to psycopg3 when using PostgreSQL.
+        """
         if self.environment == Environment.PRODUCTION:
             # For production, ensure proper PostgreSQL URL format
             if not self.database.url.startswith("postgresql://"):
                 raise ValueError("Production requires PostgreSQL database")
-        
-        return self.database.url
+
+        url = self.database.url
+
+        # Normalize SQLAlchemy URL to use psycopg3 driver when using PostgreSQL
+        # Accept both postgresql:// and postgresql+psycopg2:// inputs
+        if url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+psycopg://", 1)
+        elif url.startswith("postgresql+psycopg2://"):
+            url = url.replace("postgresql+psycopg2://", "postgresql+psycopg://", 1)
+
+        return url
 
 
 # Global configuration instance
