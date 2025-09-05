@@ -1,0 +1,424 @@
+"""
+Professional Webhook Application for HCTC-CRM
+Copyright (c) 2025 - Signature: 8598
+
+Enterprise-grade webhook handler for WhatsApp Business API and Facebook Messenger
+with comprehensive error handling, logging, and security features.
+"""
+
+from flask import Flask, request, jsonify, abort
+from werkzeug.exceptions import BadRequest, Unauthorized, InternalServerError
+import logging
+import json
+import hashlib
+import hmac
+import time
+from typing import Dict, Any, Optional
+from datetime import datetime, timezone
+
+from ..config import config
+from ..services import get_message_service
+from ..utils.logging import setup_logging
+from ..utils.security import validate_webhook_signature, sanitize_input
+from ..utils.validators import validate_whatsapp_payload, validate_facebook_payload
+
+# Setup logging
+setup_logging()
+logger = logging.getLogger(__name__)
+
+# Create Flask application
+app = Flask(__name__)
+app.secret_key = config.webhook.secret_key
+
+# Disable Flask's default logging to use our custom logger
+import logging as flask_logging
+flask_logging.getLogger('werkzeug').setLevel(flask_logging.WARNING)
+
+
+class WebhookHandler:
+    """
+    Professional webhook handler with comprehensive error handling.
+    Signature: 8598
+    """
+    
+    def __init__(self):
+        self.message_service = get_message_service()
+        self.signature = "8598"
+        self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
+    
+    def handle_verification(self, verify_token: str, challenge: str) -> str:
+        """
+        Handle webhook verification request.
+        
+        Args:
+            verify_token: Token from webhook request
+            challenge: Challenge string from webhook request
+            
+        Returns:
+            str: Challenge string if verification successful
+            
+        Raises:
+            Unauthorized: If verification fails
+        """
+        try:
+            self.logger.info(f"Webhook verification attempt - Token: {verify_token}, Challenge: {challenge}")
+            
+            if verify_token == config.webhook.verify_token:
+                self.logger.info("Webhook verification successful - Signature: 8598")
+                return challenge
+            else:
+                self.logger.warning("Webhook verification failed - Invalid token")
+                raise Unauthorized("Verification failed")
+                
+        except Exception as e:
+            self.logger.error(f"Webhook verification error: {e}")
+            raise Unauthorized("Verification failed")
+    
+    def handle_whatsapp_message(self, data: Dict[str, Any]) -> None:
+        """
+        Handle incoming WhatsApp message.
+        
+        Args:
+            data: WhatsApp webhook payload
+            
+        Raises:
+            BadRequest: If payload is invalid
+        """
+        try:
+            # Validate payload structure
+            if not validate_whatsapp_payload(data):
+                raise BadRequest("Invalid WhatsApp payload structure")
+            
+            entry = data["entry"][0]
+            changes = entry["changes"]
+            
+            for change in changes:
+                if change["value"].get("messages"):
+                    for message in change["value"]["messages"]:
+                        self._process_whatsapp_message(message, change["value"])
+                        
+        except Exception as e:
+            self.logger.error(f"Error processing WhatsApp message: {e}")
+            raise
+    
+    def handle_facebook_message(self, data: Dict[str, Any]) -> None:
+        """
+        Handle incoming Facebook Messenger message.
+        
+        Args:
+            data: Facebook webhook payload
+            
+        Raises:
+            BadRequest: If payload is invalid
+        """
+        try:
+            # Validate payload structure
+            if not validate_facebook_payload(data):
+                raise BadRequest("Invalid Facebook payload structure")
+            
+            entry = data["entry"][0]
+            
+            if "messaging" in entry:
+                for messaging_event in entry["messaging"]:
+                    self._process_facebook_message(messaging_event)
+                    
+        except Exception as e:
+            self.logger.error(f"Error processing Facebook message: {e}")
+            raise
+    
+    def _process_whatsapp_message(self, message: Dict[str, Any], value: Dict[str, Any]) -> None:
+        """Process individual WhatsApp message."""
+        try:
+            sender = message["from"]
+            timestamp = message["timestamp"]
+            message_id = message.get("id")
+            
+            # Extract message content based on type
+            if message["type"] == "text":
+                content = message["text"]["body"]
+                message_type = "text"
+            elif message["type"] == "image":
+                content = f"[Image message] ID: {message['image']['id']}"
+                message_type = "image"
+            elif message["type"] == "document":
+                content = f"[Document] {message['document'].get('filename', 'Unknown')}"
+                message_type = "document"
+            elif message["type"] == "audio":
+                content = "[Audio message]"
+                message_type = "audio"
+            elif message["type"] == "video":
+                content = "[Video message]"
+                message_type = "video"
+            else:
+                content = f"[{message['type'].title()} message]"
+                message_type = message["type"]
+            
+            # Prepare extra data
+            extra_data = {
+                "phone_number_id": value.get("metadata", {}).get("phone_number_id"),
+                "display_phone_number": value.get("metadata", {}).get("display_phone_number"),
+                "message_type": message["type"]
+            }
+            
+            # Log message
+            self.message_service.log_message(
+                agent="Agent1",  # Default agent - can be customized
+                platform="WhatsApp",
+                recipient=sender,
+                content=sanitize_input(content),
+                message_type=message_type,
+                message_id=message_id,
+                sender_id=sender,
+                is_incoming=True,
+                status="received",
+                extra_data=extra_data
+            )
+            
+            self.logger.info(f"WhatsApp message processed - From: {sender}, Type: {message_type}")
+            
+        except Exception as e:
+            self.logger.error(f"Error processing individual WhatsApp message: {e}")
+            raise
+    
+    def _process_facebook_message(self, messaging_event: Dict[str, Any]) -> None:
+        """Process individual Facebook Messenger message."""
+        try:
+            sender = messaging_event["sender"]["id"]
+            timestamp = messaging_event["timestamp"]
+            
+            if "message" in messaging_event:
+                message = messaging_event["message"]
+                message_id = message.get("mid")
+                
+                if "text" in message:
+                    content = message["text"]
+                    message_type = "text"
+                elif "attachments" in message:
+                    content = f"[Attachment] Type: {message['attachments'][0]['type']}"
+                    message_type = "attachment"
+                else:
+                    content = "[Unknown message type]"
+                    message_type = "unknown"
+                
+                # Prepare extra data
+                extra_data = {
+                    "recipient_id": messaging_event.get("recipient", {}).get("id"),
+                    "message_type": message_type
+                }
+                
+                # Log message
+                self.message_service.log_message(
+                    agent="Agent1",  # Default agent - can be customized
+                    platform="Facebook",
+                    recipient=sender,
+                    content=sanitize_input(content),
+                    message_type=message_type,
+                    message_id=message_id,
+                    sender_id=sender,
+                    is_incoming=True,
+                    status="received",
+                    extra_data=extra_data
+                )
+                
+                self.logger.info(f"Facebook message processed - From: {sender}, Type: {message_type}")
+                
+            elif "postback" in messaging_event:
+                # Handle postback events
+                postback = messaging_event["postback"]
+                content = f"[Postback] {postback['title']}: {postback['payload']}"
+                
+                self.message_service.log_message(
+                    agent="Agent1",
+                    platform="Facebook",
+                    recipient=sender,
+                    content=sanitize_input(content),
+                    message_type="postback",
+                    message_id=postback.get("mid"),
+                    sender_id=sender,
+                    is_incoming=True,
+                    status="received",
+                    extra_data={"postback_title": postback['title'], "postback_payload": postback['payload']}
+                )
+                
+                self.logger.info(f"Facebook postback processed - From: {sender}")
+                
+        except Exception as e:
+            self.logger.error(f"Error processing individual Facebook message: {e}")
+            raise
+
+
+# Initialize webhook handler
+webhook_handler = WebhookHandler()
+
+
+@app.route('/webhook', methods=['GET', 'POST'])
+def webhook():
+    """
+    Main webhook endpoint for Meta platforms.
+    Handles both verification and message processing.
+    """
+    try:
+        if request.method == 'GET':
+            # Webhook verification
+            verify_token = request.args.get("hub.verify_token")
+            challenge = request.args.get("hub.challenge")
+            
+            if not verify_token or not challenge:
+                logger.warning("Missing verification parameters")
+                abort(400, "Missing verification parameters")
+            
+            return webhook_handler.handle_verification(verify_token, challenge)
+        
+        elif request.method == 'POST':
+            # Message processing
+            try:
+                data = request.get_json()
+                if not data:
+                    logger.warning("Empty webhook payload")
+                    abort(400, "Empty payload")
+                
+                logger.info(f"Received webhook data - Object: {data.get('object')}")
+                
+                # Route to appropriate handler
+                if data.get("object") == "whatsapp_business_account":
+                    webhook_handler.handle_whatsapp_message(data)
+                elif data.get("object") == "page":
+                    webhook_handler.handle_facebook_message(data)
+                else:
+                    logger.warning(f"Unknown webhook object type: {data.get('object')}")
+                    abort(400, f"Unknown object type: {data.get('object')}")
+                
+                return jsonify({"status": "ok", "signature": "8598"}), 200
+                
+            except BadRequest as e:
+                logger.warning(f"Bad request: {e}")
+                return jsonify({"error": str(e)}), 400
+            except Exception as e:
+                logger.error(f"Webhook processing error: {e}")
+                return jsonify({"error": "Internal server error"}), 500
+    
+    except Exception as e:
+        logger.error(f"Webhook endpoint error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """
+    Health check endpoint for monitoring.
+    """
+    try:
+        # Check database connectivity
+        from ..database import db_manager
+        db_healthy = db_manager.health_check()
+        
+        health_status = {
+            "status": "healthy" if db_healthy else "unhealthy",
+            "service": "HCTC-CRM Webhook",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "version": "2.0.0",
+            "signature": "8598",
+            "database": "connected" if db_healthy else "disconnected"
+        }
+        
+        status_code = 200 if db_healthy else 503
+        return jsonify(health_status), status_code
+        
+    except Exception as e:
+        logger.error(f"Health check error: {e}")
+        return jsonify({
+            "status": "unhealthy",
+            "error": str(e),
+            "signature": "8598"
+        }), 503
+
+
+@app.route('/', methods=['GET'])
+def home():
+    """
+    Home endpoint with system information.
+    """
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>HCTC-CRM Webhook System</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+            .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            h1 { color: #2c3e50; }
+            .feature { margin: 20px 0; padding: 15px; background: #ecf0f1; border-radius: 5px; }
+            .status { color: #27ae60; font-weight: bold; }
+            .signature { color: #e74c3c; font-weight: bold; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🚀 HCTC-CRM Webhook System</h1>
+            <p class="status">✅ System Online - Signature: 8598</p>
+            
+            <div class="feature">
+                <h3>📱 WhatsApp Business API Integration</h3>
+                <p>Real-time message processing and agent tracking</p>
+            </div>
+            
+            <div class="feature">
+                <h3>📘 Facebook Messenger Integration</h3>
+                <p>Complete Facebook Messenger support with analytics</p>
+            </div>
+            
+            <div class="feature">
+                <h3>📊 Advanced Analytics</h3>
+                <p>Comprehensive reporting and performance metrics</p>
+            </div>
+            
+            <h3>🔗 Endpoints:</h3>
+            <ul>
+                <li><strong>Webhook:</strong> /webhook</li>
+                <li><strong>Health Check:</strong> <a href="/health">/health</a></li>
+                <li><strong>Dashboard:</strong> <a href="http://localhost:8050">http://localhost:8050</a></li>
+            </ul>
+            
+            <p class="signature">© 2025 - Signature: 8598 - Professional Call Center Management</p>
+        </div>
+    </body>
+    </html>
+    """
+
+
+@app.errorhandler(400)
+def bad_request(error):
+    """Handle bad request errors."""
+    return jsonify({"error": "Bad request", "signature": "8598"}), 400
+
+
+@app.errorhandler(401)
+def unauthorized(error):
+    """Handle unauthorized errors."""
+    return jsonify({"error": "Unauthorized", "signature": "8598"}), 401
+
+
+@app.errorhandler(404)
+def not_found(error):
+    """Handle not found errors."""
+    return jsonify({"error": "Not found", "signature": "8598"}), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    """Handle internal server errors."""
+    return jsonify({"error": "Internal server error", "signature": "8598"}), 500
+
+
+if __name__ == "__main__":
+    # Initialize database
+    from ..database import init_database
+    init_database()
+    
+    # Start application
+    logger.info(f"Starting HCTC-CRM Webhook Server - Signature: 8598")
+    app.run(
+        host=config.webhook.host,
+        port=config.webhook.port,
+        debug=config.webhook.debug
+    )

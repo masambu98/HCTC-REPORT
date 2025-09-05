@@ -1,0 +1,8 @@
+id,agent,platform,recipient,content,timestamp,message_type,message_id,sender_id,is_incoming,status,extra_data
+3,Agent1,WhatsApp,+1234567890,"Hello, I need help with my order",2025-09-05 04:33:40.234222,text,incoming_msg_001,+1234567890,1,received,"{""phone_number_id"": ""987654321""}"
+4,Agent1,WhatsApp,+1234567890,Hi! I can help you with your order. What is your order number?,2025-09-05 04:33:40.241604,text,outgoing_msg_001,Agent1,0,sent,"{""phone_number_id"": ""987654321""}"
+5,Agent1,WhatsApp,+1234567890,My order number is #12345,2025-09-05 04:33:40.250147,text,incoming_msg_002,+1234567890,1,received,"{""phone_number_id"": ""987654321""}"
+6,Agent1,WhatsApp,+1234567890,Thank you! I found your order. It will be delivered tomorrow.,2025-09-05 04:33:40.257232,text,outgoing_msg_002,Agent1,0,sent,"{""phone_number_id"": ""987654321""}"
+7,Agent1,WhatsApp,+1987654321,Hello! This is a test message from WhatsApp webhook.,2025-09-05 04:34:18.278648,text,test_webhook_msg_001,+1987654321,1,received,"{""phone_number_id"": ""987654321""}"
+8,Agent1,WhatsApp,+1555123456,This is another test message from WhatsApp webhook.,2025-09-05 04:35:08.359944,text,test_webhook_msg_002,+1555123456,1,received,"{""phone_number_id"": ""987654321""}"
+9,Agent2,WhatsApp,+1555123456,Thank you for your message! How can I help you today?,2025-09-05 04:35:08.412789,text,agent_reply_001,Agent2,0,sent,"{""phone_number_id"": ""987654321""}"
