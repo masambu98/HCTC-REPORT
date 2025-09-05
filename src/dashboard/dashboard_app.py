@@ -437,7 +437,7 @@ def export_csv(n_clicks, platform, agent, start_date, end_date, search_text, mes
 
 if __name__ == '__main__':
     logger.info("Starting HCTC-CRM Dashboard - Signature: 8598")
-    app.run_server(
+    app.run(
         host=config.dashboard.host,
         port=config.dashboard.port,
         debug=config.dashboard.debug
