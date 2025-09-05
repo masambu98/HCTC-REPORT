@@ -7,7 +7,7 @@ SQLAlchemy models for the call center management system.
 
 from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, Index, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, foreign
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any
 import json
@@ -99,8 +99,13 @@ class Agent(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
 
-    # Relationship to messages
-    messages = relationship("Message", backref="agent_obj")
+    # Relationship to messages via agent name (no FK). View-only to avoid writes.
+    messages = relationship(
+        "Message",
+        primaryjoin="foreign(Message.agent)==Agent.name",
+        viewonly=True,
+        lazy="selectin",
+    )
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert model to dictionary."""
