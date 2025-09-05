@@ -31,7 +31,7 @@ def main():
         logger.info("✅ Database initialized successfully")
         
         # Start the dashboard
-        app.run_server(
+        app.run(
             host=os.getenv('DASHBOARD_HOST', '0.0.0.0'),
             port=int(os.getenv('DASHBOARD_PORT', 8050)),
             debug=os.getenv('DEBUG', 'False').lower() == 'true'
