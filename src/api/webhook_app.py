@@ -20,6 +20,7 @@ from ..config import config
 from ..services import get_message_service
 from ..utils.logging import setup_logging
 from ..utils.security import validate_webhook_signature, sanitize_input
+from ..utils.security import is_valid_phone_number
 from ..utils.validators import validate_whatsapp_payload, validate_facebook_payload
 
 # Setup logging
@@ -384,6 +385,120 @@ def home():
     </body>
     </html>
     """
+
+
+@app.route('/send', methods=['POST'])
+def send_message():
+    """
+    Send a WhatsApp message via Cloud API and log it as an outgoing message.
+    Expected JSON body: {"agent": "AgentName", "to": "+2547...", "text": "..."}
+    """
+    try:
+        data = request.get_json(force=True, silent=False)
+        agent = sanitize_input((data or {}).get('agent', ''))
+        to = sanitize_input((data or {}).get('to', ''))
+        text = (data or {}).get('text', '')
+
+        if not agent or not to or not text:
+            return jsonify({"error": "agent, to, and text are required", "signature": "8598"}), 400
+
+        if not is_valid_phone_number(to):
+            return jsonify({"error": "invalid phone number format (E.164)", "signature": "8598"}), 400
+
+        # Call WhatsApp Cloud API
+        import requests
+        url = f"https://graph.facebook.com/v18.0/{config.whatsapp.phone_id}/messages"
+        headers = {
+            "Authorization": f"Bearer {config.whatsapp.access_token}",
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "messaging_product": "whatsapp",
+            "to": to.lstrip('+'),
+            "type": "text",
+            "text": {"body": text},
+        }
+
+        resp = requests.post(url, headers=headers, json=payload, timeout=20)
+        if resp.status_code >= 400:
+            logger.error(f"WhatsApp send failed: {resp.status_code} {resp.text}")
+            return jsonify({"error": "send_failed", "details": resp.text, "signature": "8598"}), 502
+
+        # Log outgoing message
+        try:
+            message_id = (resp.json() or {}).get('messages', [{}])[0].get('id')
+        except Exception:
+            message_id = None
+
+        get_message_service().log_message(
+            agent=agent,
+            platform="WhatsApp",
+            recipient=to,
+            content=sanitize_input(text),
+            message_type="text",
+            message_id=message_id,
+            sender_id=None,
+            is_incoming=False,
+            status="sent",
+            extra_data={"provider": "cloud_api"}
+        )
+
+        return jsonify({"status": "ok", "message_id": message_id, "signature": "8598"}), 200
+
+    except Exception as e:
+        logger.error(f"/send error: {e}")
+        return jsonify({"error": "internal_error", "signature": "8598"}), 500
+
+
+@app.route('/reports/agent-replies', methods=['GET'])
+def agent_replies_report():
+    """
+    Per-agent reply counts and distinct recipients replied to.
+    Query params: start=YYYY-MM-DD, end=YYYY-MM-DD (optional)
+    """
+    try:
+        from sqlalchemy import func, distinct
+        from ..database import get_db_session, Message
+        from datetime import datetime
+
+        start = request.args.get('start')
+        end = request.args.get('end')
+
+        with get_db_session() as s:
+            q = s.query(
+                Message.agent.label('agent'),
+                func.count().label('outgoing_count'),
+                func.count(distinct(Message.recipient)).label('recipients_replied_to'),
+            ).filter(Message.is_incoming == False)
+
+            if start:
+                try:
+                    start_dt = datetime.fromisoformat(start)
+                    q = q.filter(Message.timestamp >= start_dt)
+                except Exception:
+                    return jsonify({"error": "invalid start date"}), 400
+            if end:
+                try:
+                    end_dt = datetime.fromisoformat(end)
+                    q = q.filter(Message.timestamp <= end_dt)
+                except Exception:
+                    return jsonify({"error": "invalid end date"}), 400
+
+            rows = q.group_by(Message.agent).all()
+            result = [
+                {
+                    "agent": r.agent,
+                    "outgoing_count": int(r.outgoing_count or 0),
+                    "recipients_replied_to": int(r.recipients_replied_to or 0),
+                }
+                for r in rows
+            ]
+
+        return jsonify({"data": result, "signature": "8598"}), 200
+
+    except Exception as e:
+        logger.error(f"/reports/agent-replies error: {e}")
+        return jsonify({"error": "internal_error", "signature": "8598"}), 500
 
 
 @app.errorhandler(400)
