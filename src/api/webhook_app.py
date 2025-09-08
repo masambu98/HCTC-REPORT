@@ -528,12 +528,18 @@ def agent_daily_excel():
         messages_handled = len(rows)
         phones_cell = "\n".join(phone_numbers)
 
+        # Determine if agent is on leave that day
+        from ..services import get_message_service as _gms
+        svc = _gms()
+        on_leave = svc.is_agent_on_leave(agent_name, start)
+
         df = pd.DataFrame([
             {
                 "Date": start.strftime('%Y-%m-%d'),
                 "Agent": display,
                 "MessagesHandled": messages_handled,
                 "PhoneNumbers": phones_cell,
+                "OnLeave": on_leave,
             }
         ])
 
@@ -607,12 +613,18 @@ def agent_handled_daily_excel():
             if m.recipient and m.recipient not in phone_numbers:
                 phone_numbers.append(m.recipient)
 
+        # Determine if agent is on leave that day
+        from ..services import get_message_service as _gms
+        svc = _gms()
+        on_leave = svc.is_agent_on_leave(agent_name, start)
+
         df = pd.DataFrame([
             {
                 "Date": start.strftime('%Y-%m-%d'),
                 "Agent": agent_name,
                 "MessagesHandled": len(rows),
                 "PhoneNumbers": "\n".join(phone_numbers),
+                "OnLeave": on_leave,
             }
         ])
 
@@ -646,6 +658,96 @@ def schedules_availability():
         return jsonify({"data": result, "signature": "8598"}), 200
     except Exception as e:
         logger.error(f"/team/schedules/availability error: {e}")
+        return jsonify({"error": "internal_error", "signature": "8598"}), 500
+
+
+@app.route('/team/schedules/import', methods=['POST'])
+def schedules_import():
+    """Import schedules from JSON payload: {items: [{agent, date, shift_start, shift_end, role?, notes?}, ...]}"""
+    try:
+        from ..database import get_db_session, AgentSchedule
+        import json as _j
+        data = request.get_json(silent=True) or {}
+        items = data.get('items') or []
+        if not isinstance(items, list) or not items:
+            return jsonify({"error": "items list required", "signature": "8598"}), 400
+        created = 0
+        with get_db_session() as s:
+            from datetime import datetime
+            for itm in items:
+                try:
+                    agent = str(itm.get('agent') or '').strip()
+                    date_s = itm.get('date')
+                    start_s = itm.get('shift_start')
+                    end_s = itm.get('shift_end')
+                    if not agent or not date_s or not start_s or not end_s:
+                        continue
+                    date = datetime.fromisoformat(date_s)
+                    shift_start = datetime.fromisoformat(start_s)
+                    shift_end = datetime.fromisoformat(end_s)
+                    role = (itm.get('role') or None)
+                    notes = (itm.get('notes') or None)
+                    s.add(AgentSchedule(agent=agent, date=date, shift_start=shift_start, shift_end=shift_end, role=role, notes=notes))
+                    created += 1
+                except Exception:
+                    continue
+        return jsonify({"status": "ok", "created": created, "signature": "8598"}), 200
+    except Exception as e:
+        logger.error(f"/team/schedules/import error: {e}")
+        return jsonify({"error": "internal_error", "signature": "8598"}), 500
+
+
+@app.route('/team/schedules/export', methods=['GET'])
+def schedules_export():
+    """Export schedules as CSV. Query: start=YYYY-MM-DD, end=YYYY-MM-DD, agent(optional)."""
+    try:
+        from ..database import get_db_session, AgentSchedule
+        from datetime import datetime, timedelta
+        import pandas as pd
+        from io import StringIO
+        start_s = request.args.get('start')
+        end_s = request.args.get('end')
+        agent = request.args.get('agent')
+        if not start_s or not end_s:
+            return jsonify({"error": "start and end required", "signature": "8598"}), 400
+        start = datetime.fromisoformat(start_s)
+        end = datetime.fromisoformat(end_s) + timedelta(days=1)
+        with get_db_session() as s:
+            q = s.query(AgentSchedule).filter(AgentSchedule.date >= start, AgentSchedule.date < end)
+            if agent:
+                q = q.filter(AgentSchedule.agent == agent)
+            rows = q.all()
+        df = pd.DataFrame([r.to_dict() for r in rows]) if rows else pd.DataFrame(columns=["agent","date","shift_start","shift_end","role","notes"])
+        csv_buf = StringIO()
+        df.to_csv(csv_buf, index=False)
+        csv_buf.seek(0)
+        return app.response_class(csv_buf.getvalue(), mimetype='text/csv')
+    except Exception as e:
+        logger.error(f"/team/schedules/export error: {e}")
+        return jsonify({"error": "internal_error", "signature": "8598"}), 500
+
+
+@app.route('/team/leaves', methods=['POST'])
+def create_leave():
+    """Create a leave record. JSON: {agent, start_date, end_date, reason?, status?} default status=approved."""
+    try:
+        from ..database import get_db_session, AgentLeave
+        from datetime import datetime
+        body = request.get_json(force=True)
+        agent = (body.get('agent') or '').strip()
+        start_s = body.get('start_date')
+        end_s = body.get('end_date')
+        reason = (body.get('reason') or None)
+        status = (body.get('status') or 'approved')
+        if not agent or not start_s or not end_s:
+            return jsonify({"error": "agent, start_date, end_date required", "signature": "8598"}), 400
+        start = datetime.fromisoformat(start_s)
+        end = datetime.fromisoformat(end_s)
+        with get_db_session() as s:
+            s.add(AgentLeave(agent=agent, start_date=start, end_date=end, reason=reason, status=status))
+        return jsonify({"status": "ok", "signature": "8598"}), 200
+    except Exception as e:
+        logger.error(f"/team/leaves error: {e}")
         return jsonify({"error": "internal_error", "signature": "8598"}), 500
 
 

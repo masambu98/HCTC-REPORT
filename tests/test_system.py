@@ -209,6 +209,27 @@ class TestWebhookAPI:
         assert resp2.status_code == 200
         # Should be an Excel MIME type
         assert resp2.headers.get('Content-Type', '').startswith('application/vnd.openxmlformats-officedocument')
+
+    def test_schedule_import_export_and_leave(self):
+        """Test schedule import/export and leave creation affects reports."""
+        # Import one schedule
+        import json
+        from datetime import datetime, timedelta
+        now = datetime.now().isoformat()
+        later = (datetime.now() + timedelta(hours=8)).isoformat()
+        payload = {"items": [{"agent": "Agent2", "date": now, "shift_start": now, "shift_end": later, "role": "Agent"}]}
+        r = self.client.post('/team/schedules/import', data=json.dumps(payload), content_type='application/json')
+        assert r.status_code == 200
+        # Export schedules CSV
+        start_d = datetime.now().strftime('%Y-%m-%d')
+        end_d = start_d
+        r2 = self.client.get('/team/schedules/export', query_string={"start": start_d, "end": end_d})
+        assert r2.status_code == 200
+        assert r2.headers.get('Content-Type', '').startswith('text/csv')
+        # Create leave
+        leave_body = {"agent": "Agent2", "start_date": now, "end_date": later, "reason": "Sick", "status": "approved"}
+        r3 = self.client.post('/team/leaves', data=json.dumps(leave_body), content_type='application/json')
+        assert r3.status_code == 200
     
     def test_facebook_message_processing(self):
         """Test Facebook message processing."""
