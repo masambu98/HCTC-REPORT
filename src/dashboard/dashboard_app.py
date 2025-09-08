@@ -37,6 +37,8 @@ logger = get_logger(__name__)
 
 # Create Dash application
 app = dash.Dash(__name__)
+app.config.suppress_callback_exceptions = True
+server = app.server
 app.title = "HCTC-CRM Analytics Dashboard - Signature: 8598"
 
 # Get message service
