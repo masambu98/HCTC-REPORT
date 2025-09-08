@@ -226,10 +226,23 @@ class TestWebhookAPI:
         r2 = self.client.get('/team/schedules/export', query_string={"start": start_d, "end": end_d})
         assert r2.status_code == 200
         assert r2.headers.get('Content-Type', '').startswith('text/csv')
-        # Create leave
-        leave_body = {"agent": "Agent2", "start_date": now, "end_date": later, "reason": "Sick", "status": "approved"}
-        r3 = self.client.post('/team/leaves', data=json.dumps(leave_body), content_type='application/json')
+        # Create leave in >7 days should pass
+        future_start = (datetime.now() + timedelta(days=8)).isoformat()
+        future_end = (datetime.now() + timedelta(days=9)).isoformat()
+        leave_body_ok = {"agent": "Agent2", "start_date": future_start, "end_date": future_end, "reason": "Vacation", "status": "approved"}
+        r3 = self.client.post('/team/leaves', data=json.dumps(leave_body_ok), content_type='application/json')
         assert r3.status_code == 200
+        # Create leave within 7 days should fail
+        soon_start = (datetime.now() + timedelta(days=2)).isoformat()
+        soon_end = (datetime.now() + timedelta(days=3)).isoformat()
+        leave_body_bad = {"agent": "Agent2", "start_date": soon_start, "end_date": soon_end, "reason": "Short notice"}
+        r4 = self.client.post('/team/leaves', data=json.dumps(leave_body_bad), content_type='application/json')
+        assert r4.status_code == 400
+
+        # Create escalation
+        esc = {"agent": "Agent2", "reason": "Customer threatens chargeback", "priority": "high", "recipient": "+15550001111"}
+        r5 = self.client.post('/team/escalations', data=json.dumps(esc), content_type='application/json')
+        assert r5.status_code == 200
     
     def test_facebook_message_processing(self):
         """Test Facebook message processing."""

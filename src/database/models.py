@@ -266,3 +266,42 @@ class AgentLeave(Base):
             'reason': self.reason,
             'status': self.status,
         }
+
+
+class AgentEscalation(Base):
+    """
+    Agent escalation records to team leader/management.
+    Signature: 8598
+    """
+    __tablename__ = 'agent_escalations'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    agent = Column(String(100), nullable=False, index=True)
+    recipient = Column(String(100), nullable=True, index=True)  # customer id/phone
+    message_id = Column(String(100), nullable=True, index=True)
+    reason = Column(Text, nullable=False)
+    priority = Column(String(20), nullable=True)  # low/normal/high
+    status = Column(String(50), nullable=False, default='open', index=True)
+    team_leader = Column(String(100), nullable=True)  # identifier/email
+    center_manager = Column(String(100), nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+    __table_args__ = (
+        Index('idx_escalation_agent_status', 'agent', 'status'),
+    )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'id': self.id,
+            'agent': self.agent,
+            'recipient': self.recipient,
+            'message_id': self.message_id,
+            'reason': self.reason,
+            'priority': self.priority,
+            'status': self.status,
+            'team_leader': self.team_leader,
+            'center_manager': self.center_manager,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }

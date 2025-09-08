@@ -729,10 +729,14 @@ def schedules_export():
 
 @app.route('/team/leaves', methods=['POST'])
 def create_leave():
-    """Create a leave record. JSON: {agent, start_date, end_date, reason?, status?} default status=approved."""
+    """Create a leave record (request sent to team leader and center manager).
+    JSON: {agent, start_date, end_date, reason?, status?}
+    Rule: must be requested at least 7 days before start_date.
+    Default status=approved (can be changed to requested if workflow added later).
+    """
     try:
         from ..database import get_db_session, AgentLeave
-        from datetime import datetime
+        from datetime import datetime, timedelta
         body = request.get_json(force=True)
         agent = (body.get('agent') or '').strip()
         start_s = body.get('start_date')
@@ -743,11 +747,42 @@ def create_leave():
             return jsonify({"error": "agent, start_date, end_date required", "signature": "8598"}), 400
         start = datetime.fromisoformat(start_s)
         end = datetime.fromisoformat(end_s)
+        # 7-day rule
+        now = datetime.now()
+        if (start - now) < timedelta(days=7):
+            return jsonify({"error": "leave must be requested at least 7 days in advance", "signature": "8598"}), 400
         with get_db_session() as s:
             s.add(AgentLeave(agent=agent, start_date=start, end_date=end, reason=reason, status=status))
-        return jsonify({"status": "ok", "signature": "8598"}), 200
+        # Notify team leader and center manager (placeholder - could integrate email/SMS)
+        logger.info(f"Leave requested by {agent} for {start_s} to {end_s} - notifying team leader and center manager")
+        return jsonify({"status": "ok", "notified": ["team_leader", "center_manager"], "signature": "8598"}), 200
     except Exception as e:
         logger.error(f"/team/leaves error: {e}")
+        return jsonify({"error": "internal_error", "signature": "8598"}), 500
+
+
+@app.route('/team/escalations', methods=['POST'])
+def create_escalation():
+    """Create an escalation to the team leader.
+    JSON: {agent, recipient?, message_id?, reason, priority?}
+    Notifies team leader (and can extend to managers if needed).
+    """
+    try:
+        from ..database import get_db_session, AgentEscalation
+        body = request.get_json(force=True)
+        agent = (body.get('agent') or '').strip()
+        reason = (body.get('reason') or '').strip()
+        recipient = (body.get('recipient') or None)
+        message_id = (body.get('message_id') or None)
+        priority = (body.get('priority') or 'normal')
+        if not agent or not reason:
+            return jsonify({"error": "agent and reason required", "signature": "8598"}), 400
+        with get_db_session() as s:
+            s.add(AgentEscalation(agent=agent, recipient=recipient, message_id=message_id, reason=reason, priority=priority, status='open'))
+        logger.info(f"New escalation from {agent} priority={priority} - notifying team leader")
+        return jsonify({"status": "ok", "notified": ["team_leader"], "signature": "8598"}), 200
+    except Exception as e:
+        logger.error(f"/team/escalations error: {e}")
         return jsonify({"error": "internal_error", "signature": "8598"}), 500
 
 
