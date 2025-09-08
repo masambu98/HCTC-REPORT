@@ -1,0 +1,95 @@
+/* HCTC-CRM Dashboard Modern Theme (Signature: 8598) */
+
+:root {
+  --bg: #0f172a;          /* slate-900 */
+  --panel: #111827;       /* gray-900 */
+  --muted: #94a3b8;       /* slate-400 */
+  --text: #e5e7eb;        /* gray-200 */
+  --accent: #6366f1;      /* indigo-500 */
+  --accent-2: #22c55e;    /* green-500 */
+  --accent-3: #f43f5e;    /* rose-500 */
+  --shadow: 0 10px 25px rgba(0,0,0,0.35);
+  --radius: 14px;
+}
+
+html, body { background: var(--bg) !important; }
+
+.hctc-container {
+  padding: 20px;
+  min-height: 100vh;
+  background: radial-gradient(1200px 600px at 10% -20%, rgba(99,102,241,0.15), transparent 40%),
+              radial-gradient(1000px 500px at 110% 0%, rgba(34,197,94,0.08), transparent 40%),
+              var(--bg);
+}
+
+.hctc-header {
+  background: linear-gradient(135deg, rgba(99,102,241,0.9) 0%, rgba(139,92,246,0.9) 100%);
+  color: white;
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--shadow);
+}
+
+.hctc-controls, .hctc-panel, .hctc-table, .hctc-row { 
+  background: var(--panel);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.hctc-controls { 
+  padding: 18px; 
+  margin: 20px 0; 
+}
+
+.hctc-actions { 
+  text-align: center; 
+  margin-bottom: 20px; 
+}
+
+.hctc-actions .btn { 
+  padding: 10px 18px; 
+  border-radius: 10px; 
+  border: none; 
+  cursor: pointer; 
+  color: white; 
+  margin-right: 10px; 
+}
+.btn-refresh { background: var(--accent); }
+.btn-export  { background: var(--accent-2); }
+.btn-report  { background: var(--accent-3); }
+
+.hctc-stats { 
+  display: grid; 
+  grid-template-columns: repeat(4, minmax(0, 1fr)); 
+  gap: 12px; 
+  margin-bottom: 20px;
+}
+.hctc-card { 
+  padding: 18px; 
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border-radius: 12px; 
+}
+.hctc-card h3 { margin: 0; color: var(--text); }
+.hctc-card p  { margin: 6px 0 0 0; color: var(--muted); }
+
+.hctc-row { 
+  display: grid; 
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px; 
+  margin-bottom: 20px; 
+  padding: 18px; 
+}
+
+.hctc-panel { padding: 18px; margin-bottom: 20px; }
+.hctc-panel h4 { margin: 0 0 12px 0; color: var(--text); }
+
+.hctc-table { padding: 18px; }
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .hctc-row { grid-template-columns: 1fr; }
+  .hctc-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .hctc-stats { grid-template-columns: 1fr; }
+}

@@ -121,8 +121,7 @@ def create_layout() -> html.Div:
                    style={'color': '#2c3e50', 'margin': '0', 'textAlign': 'center'}),
             html.P("Professional Call Center Management - Signature: 8598", 
                   style={'color': '#7f8c8d', 'textAlign': 'center', 'margin': '5px 0'}),
-        ], style={'background': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-                 'padding': '20px', 'color': 'white', 'marginBottom': '20px'}),
+        ], className='hctc-header'),
         
         # Control Panel
         html.Div([
@@ -186,25 +185,15 @@ def create_layout() -> html.Div:
                     style={'marginTop': '5px'}
                 ),
             ], style={'flex': '1', 'minWidth': '200px'}),
-        ], style={'display': 'flex', 'flexWrap': 'wrap', 'marginBottom': '20px', 
-                 'padding': '20px', 'background': '#ecf0f1', 'borderRadius': '10px'}),
+        ], className='hctc-controls', style={'display': 'flex', 'flexWrap': 'wrap'}),
         
         # Action Buttons
         html.Div([
-            html.Button('🔄 Refresh Data', id='refresh-btn', n_clicks=0,
-                       style={'marginRight': '10px', 'padding': '10px 20px', 
-                             'background': '#3498db', 'color': 'white', 'border': 'none', 
-                             'borderRadius': '5px', 'cursor': 'pointer'}),
-            html.Button('📊 Export CSV', id='export-btn', n_clicks=0,
-                       style={'marginRight': '10px', 'padding': '10px 20px', 
-                             'background': '#27ae60', 'color': 'white', 'border': 'none', 
-                             'borderRadius': '5px', 'cursor': 'pointer'}),
-            html.Button('📈 Generate Report', id='report-btn', n_clicks=0,
-                       style={'padding': '10px 20px', 'background': '#e74c3c', 
-                             'color': 'white', 'border': 'none', 'borderRadius': '5px', 
-                             'cursor': 'pointer'}),
+            html.Button('🔄 Refresh Data', id='refresh-btn', n_clicks=0, className='btn btn-refresh'),
+            html.Button('📊 Export CSV', id='export-btn', n_clicks=0, className='btn btn-export'),
+            html.Button('📈 Generate Report', id='report-btn', n_clicks=0, className='btn btn-report'),
             dcc.Download(id='download-csv'),
-        ], style={'marginBottom': '20px', 'textAlign': 'center'}),
+        ], className='hctc-actions'),
 
         # Send Message Panel
         html.Div([
@@ -249,8 +238,7 @@ def create_layout() -> html.Div:
             ], style={'display': 'flex', 'flexWrap': 'wrap', 'alignItems': 'flex-end'}),
 
             html.Div(id='send-status', style={'marginTop': '10px'}),
-        ], style={'background': 'white', 'padding': '20px', 'borderRadius': '10px',
-                  'boxShadow': '0 2px 10px rgba(0,0,0,0.1)', 'marginBottom': '20px'}),
+        ], className='hctc-panel'),
         
         # Statistics Cards
         html.Div([
@@ -277,7 +265,7 @@ def create_layout() -> html.Div:
                 html.P('Active Agents', style={'margin': '5px 0 0 0', 'color': '#7f8c8d'})
             ], style={'textAlign': 'center', 'padding': '20px', 'background': 'white', 
                      'borderRadius': '10px', 'boxShadow': '0 2px 10px rgba(0,0,0,0.1)', 'flex': '1'}),
-        ], style={'display': 'flex', 'marginBottom': '20px'}),
+        ], className='hctc-stats'),
         
         # Charts Row
         html.Div([
@@ -285,16 +273,14 @@ def create_layout() -> html.Div:
             html.Div([
                 html.H4("Platform Distribution", style={'textAlign': 'center', 'marginBottom': '20px'}),
                 dcc.Graph(id='platform-chart', config=PLOTLY_GRAPH_CONFIG, style={'height': '360px'})
-            ], style={'flex': '1', 'marginRight': '10px', 'background': 'white', 
-                     'padding': '20px', 'borderRadius': '10px', 'boxShadow': '0 2px 10px rgba(0,0,0,0.1)'}),
+            ], className='hctc-panel'),
             
             # Agent Performance Chart
             html.Div([
                 html.H4("Agent Performance", style={'textAlign': 'center', 'marginBottom': '20px'}),
                 dcc.Graph(id='agent-chart', config=PLOTLY_GRAPH_CONFIG, style={'height': '360px'})
-            ], style={'flex': '1', 'background': 'white', 'padding': '20px', 
-                     'borderRadius': '10px', 'boxShadow': '0 2px 10px rgba(0,0,0,0.1)'}),
-        ], style={'display': 'flex', 'marginBottom': '20px'}),
+            ], className='hctc-panel'),
+        ], className='hctc-row'),
         
         # Messages Table
         html.Div([
@@ -340,8 +326,7 @@ def create_layout() -> html.Div:
                     }
                 ]
             )
-        ], style={'background': 'white', 'padding': '20px', 'borderRadius': '10px', 
-                 'boxShadow': '0 2px 10px rgba(0,0,0,0.1)'}),
+        ], className='hctc-table'),
         
         # Auto-refresh interval
         dcc.Interval(
@@ -355,7 +340,7 @@ def create_layout() -> html.Div:
             html.P("© 2025 HCTC-CRM Professional Call Center Management - Signature: 8598", 
                   style={'textAlign': 'center', 'color': '#7f8c8d', 'margin': '20px 0 0 0'})
         ])
-    ], style={'padding': '20px', 'backgroundColor': '#f8f9fa', 'minHeight': '100vh'})
+    ], className='hctc-container')
 
 
 # Set the layout
@@ -475,6 +460,7 @@ def update_dashboard(n_intervals, refresh_clicks, platform, agent, start_date,
             margin=dict(l=10, r=10, t=40, b=10),
             autosize=False,
         )
+        platform_fig.update_traces(textposition='inside', textinfo='percent+label', hole=0.3)
         
         # Agent chart
         agent_counts = filtered_df['agent'].value_counts()
@@ -491,6 +477,7 @@ def update_dashboard(n_intervals, refresh_clicks, platform, agent, start_date,
             margin=dict(l=10, r=10, t=40, b=10),
             autosize=False,
         )
+        agent_fig.update_traces(marker=dict(line=dict(width=0)), hovertemplate='%{x}: %{y}<extra></extra>')
         
         return (table_data.to_dict('records'), str(total_messages), 
                 str(incoming_count), str(outgoing_count), str(active_agents),
