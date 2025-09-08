@@ -20,6 +20,7 @@ from dash import dcc, html, dash_table, Input, Output, State, callback_context
 import plotly.graph_objs as go
 import plotly.express as px
 import pandas as pd
+import json as _json
 from datetime import datetime, date, timedelta
 from typing import List, Dict, Any
 import logging
@@ -27,6 +28,7 @@ import logging
 from src.config import config
 from src.services import get_message_service
 from src.utils.logging import setup_logging, get_logger
+from src.utils import format_agent_display
 
 # Setup logging
 setup_logging()
@@ -342,17 +344,38 @@ def update_dashboard(n_intervals, refresh_clicks, platform, agent, start_date,
             search_text or '', message_types or []
         )
         
+        # Prepare display data with agent initials when available
+        def _safe_load_extra(val):
+            try:
+                return _json.loads(val) if isinstance(val, str) and val else (val or {})
+            except Exception:
+                return {}
+
+        working_df = filtered_df.copy()
+        if 'extra_data' in working_df.columns:
+            working_df['__extra_dict'] = working_df['extra_data'].apply(_safe_load_extra)
+            working_df['__agent_initials'] = working_df['__extra_dict'].apply(lambda d: (d or {}).get('agent_initials'))
+        else:
+            working_df['__agent_initials'] = None
+
+        working_df['agent_display'] = working_df.apply(
+            lambda r: format_agent_display(r.get('agent', ''), r.get('__agent_initials')), axis=1
+        )
+
         # Prepare table data
-        table_data = filtered_df.copy()
+        table_data = working_df.copy()
         if 'timestamp' in table_data.columns:
             table_data['timestamp'] = table_data['timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S')
         table_data['is_incoming'] = table_data['is_incoming'].map({True: 'Incoming', False: 'Outgoing'})
+        # Replace agent column with display variant
+        if 'agent' in table_data.columns and 'agent_display' in table_data.columns:
+            table_data['agent'] = table_data['agent_display']
         
         # Calculate statistics
         total_messages = len(filtered_df)
         incoming_count = len(filtered_df[filtered_df['is_incoming'] == True])
         outgoing_count = len(filtered_df[filtered_df['is_incoming'] == False])
-        active_agents = len(filtered_df['agent'].unique())
+        active_agents = len(working_df['agent_display'].unique())
         
         # Cisco color palette for charts
         CISCO_COLORS = ['#00bceb', '#0d274d', '#58a618', '#7c3aed', '#dc2626', '#0284c7', '#14b8a6', '#f59e0b']
@@ -375,7 +398,7 @@ def update_dashboard(n_intervals, refresh_clicks, platform, agent, start_date,
         )
         
         # Agent chart
-        agent_counts = filtered_df['agent'].value_counts()
+        agent_counts = working_df['agent_display'].value_counts()
         bar_colors = [CISCO_COLORS[i % len(CISCO_COLORS)] for i in range(len(agent_counts))]
         agent_fig = go.Figure(data=[
             go.Bar(x=list(agent_counts.index), y=list(agent_counts.values), marker_color=bar_colors)

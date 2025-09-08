@@ -21,6 +21,7 @@ from src.database import Message, init_database, get_db_session
 from src.services import get_message_service
 from src.api.webhook_app import app
 from src.config import config
+from src.utils.agents import extract_initials_and_strip
 
 
 class TestDatabase:
@@ -140,6 +141,13 @@ class TestWebhookAPI:
         
         assert response.status_code == 200
         assert response.data.decode() == 'test_challenge'
+
+    def test_extract_initials_utility(self):
+        """Test initials extraction utility."""
+        assert extract_initials_and_strip("^BM Hello") == ("Hello", "BM")
+        assert extract_initials_and_strip("Hello ^bm") == ("Hello", "BM")
+        assert extract_initials_and_strip("^BM: Hello") == ("Hello", "BM")
+        assert extract_initials_and_strip("Hello world") == ("Hello world", None)
     
     def test_webhook_verification_invalid_token(self):
         """Test webhook verification with invalid token."""
@@ -187,6 +195,19 @@ class TestWebhookAPI:
         data = json.loads(response.data)
         assert data['status'] == 'ok'
         assert data['signature'] == '8598'
+
+    def test_send_with_initials_and_excel_report(self):
+        """Test /send parsing initials and daily excel report endpoint."""
+        # Send an outgoing message with initials token
+        payload = {"agent": "Agent1", "to": "+15550001111", "text": "^BM Hello there"}
+        resp = self.client.post('/send', data=json.dumps(payload), content_type='application/json')
+        assert resp.status_code == 200
+
+        # Request daily excel for Agent1
+        resp2 = self.client.get('/reports/agent-daily-excel', query_string={"agent": "Agent1"})
+        assert resp2.status_code == 200
+        # Should be an Excel MIME type
+        assert resp2.headers.get('Content-Type', '').startswith('application/vnd.openxmlformats-officedocument')
     
     def test_facebook_message_processing(self):
         """Test Facebook message processing."""
