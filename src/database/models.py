@@ -5,7 +5,7 @@ Copyright (c) 2025 - Signature: 8598
 SQLAlchemy models for the call center management system.
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, Index, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Text, Boolean, Index, ForeignKey, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, foreign
 from datetime import datetime, timezone
@@ -302,6 +302,34 @@ class AgentEscalation(Base):
             'status': self.status,
             'team_leader': self.team_leader,
             'center_manager': self.center_manager,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class AgentInitial(Base):
+    """
+    Unique mapping of initials -> agent name.
+    Signature: 8598
+    """
+    __tablename__ = 'agent_initials'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    initials = Column(String(10), nullable=False, index=True)
+    agent = Column(String(100), nullable=False, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint('initials', name='uq_agent_initials_initials'),
+        UniqueConstraint('agent', name='uq_agent_initials_agent'),
+    )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'id': self.id,
+            'initials': self.initials,
+            'agent': self.agent,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }

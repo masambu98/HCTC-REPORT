@@ -23,6 +23,36 @@ from ..utils.security import validate_webhook_signature, sanitize_input
 from ..utils.security import is_valid_phone_number
 from ..utils.validators import validate_whatsapp_payload, validate_facebook_payload
 from ..utils import extract_initials_and_strip
+@app.route('/team/initials', methods=['POST'])
+def register_initials():
+    """Register or update initials mapping. JSON: {initials, agent}
+    Enforces uniqueness for both initials and agent.
+    """
+    try:
+        from ..database import get_db_session, AgentInitial
+        data = request.get_json(force=True)
+        initials = (data.get('initials') or '').strip().upper()
+        agent = (data.get('agent') or '').strip()
+        if not initials or not agent:
+            return jsonify({"error": "initials and agent required", "signature": "8598"}), 400
+        with get_db_session() as s:
+            # Ensure neither initials nor agent is already taken by someone else
+            existing_i = s.query(AgentInitial).filter(AgentInitial.initials == initials).first()
+            if existing_i and existing_i.agent != agent:
+                return jsonify({"error": "initials_taken", "by": existing_i.agent, "signature": "8598"}), 409
+            existing_a = s.query(AgentInitial).filter(AgentInitial.agent == agent).first()
+            if existing_a and existing_a.initials != initials:
+                return jsonify({"error": "agent_already_has_initials", "initials": existing_a.initials, "signature": "8598"}), 409
+            if existing_i:
+                existing_i.agent = agent
+            elif existing_a:
+                existing_a.initials = initials
+            else:
+                s.add(AgentInitial(initials=initials, agent=agent))
+        return jsonify({"status": "ok", "signature": "8598"}), 200
+    except Exception as e:
+        logger.error(f"/team/initials error: {e}")
+        return jsonify({"error": "internal_error", "signature": "8598"}), 500
 
 # Setup logging
 setup_logging()
@@ -414,6 +444,16 @@ def send_message():
 
         # Extract initials from content and strip token for sending/logging
         cleaned_text, initials = extract_initials_and_strip(text)
+        # Enforce initials mapping: initials must exist and map to agent
+        from ..database import get_db_session, AgentInitial
+        if not initials:
+            return jsonify({"error": "initials_required", "message": "Prefix or suffix message with ^XX", "signature": "8598"}), 400
+        with get_db_session() as s:
+            rec = s.query(AgentInitial).filter(AgentInitial.initials == initials).first()
+            if not rec:
+                return jsonify({"error": "unknown_initials", "signature": "8598"}), 400
+            if rec.agent != agent:
+                return jsonify({"error": "initials_agent_mismatch", "expected_agent": rec.agent, "signature": "8598"}), 400
 
         # Call WhatsApp Cloud API
         import requests
@@ -778,6 +818,7 @@ def create_escalation():
         if not agent or not reason:
             return jsonify({"error": "agent and reason required", "signature": "8598"}), 400
         with get_db_session() as s:
+            # TODO: look up TL and CM contacts; for now, store fields if provided
             s.add(AgentEscalation(agent=agent, recipient=recipient, message_id=message_id, reason=reason, priority=priority, status='open'))
         logger.info(f"New escalation from {agent} priority={priority} - notifying team leader")
         return jsonify({"status": "ok", "notified": ["team_leader"], "signature": "8598"}), 200
