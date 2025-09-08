@@ -1,0 +1,75 @@
+/* Cisco Finesse-inspired Light Theme (non-invasive) - Signature: 8598 */
+
+:root {
+  --f-bg: #f4f6f8;             /* light app background */
+  --f-surface: #ffffff;        /* panels */
+  --f-border: #e5e7eb;         /* subtle borders */
+  --f-text: #1f2937;           /* primary text */
+  --f-muted: #6b7280;          /* secondary text */
+  --f-accent: #2563eb;         /* primary blue */
+  --f-accent-2: #10b981;       /* green */
+  --f-accent-3: #ef4444;       /* red */
+  --f-radius: 10px;
+  --f-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+html, body { background: var(--f-bg) !important; color: var(--f-text); }
+
+/* Container */
+.hctc-container { background: var(--f-bg) !important; }
+
+/* Header */
+.hctc-header { 
+  background: linear-gradient(180deg, #e8eefc 0%, #ffffff 60%);
+  color: var(--f-text) !important; 
+  border: 1px solid var(--f-border);
+  box-shadow: var(--f-shadow);
+}
+.hctc-header h1 { color: var(--f-text) !important; }
+.hctc-header p { color: var(--f-muted) !important; }
+
+/* Panels and rows */
+.hctc-panel, .hctc-table, .hctc-controls { 
+  background: var(--f-surface) !important; 
+  border: 1px solid var(--f-border); 
+  border-radius: var(--f-radius);
+  box-shadow: var(--f-shadow);
+}
+.hctc-row { gap: 12px; }
+
+/* Buttons */
+.btn { border-radius: 8px; border: 1px solid transparent; }
+.btn.btn-refresh { background: var(--f-accent); }
+.btn.btn-export  { background: var(--f-accent-2); }
+.btn.btn-report  { background: var(--f-accent-3); }
+.btn:hover { filter: brightness(0.95); }
+
+/* Cards */
+.hctc-stats .hctc-card, .hctc-stats > div { 
+  background: var(--f-surface) !important; 
+  border: 1px solid var(--f-border);
+  border-radius: var(--f-radius);
+}
+.hctc-stats h3 { color: var(--f-text) !important; }
+.hctc-stats p { color: var(--f-muted) !important; }
+
+/* DataTable tweaks (base selectors to avoid ID changes) */
+.dash-table-container .dash-spreadsheet-container { border: none !important; }
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet {
+  border: 1px solid var(--f-border) !important;
+  border-radius: var(--f-radius) !important;
+}
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-container tr th {
+  background: #f8fafc !important; color: var(--f-text) !important;
+}
+
+/* Inputs */
+.Select-control, .Select-menu-outer, input, textarea { 
+  border-radius: 8px !important; 
+  border-color: var(--f-border) !important; 
+}
+
+/* Plotly background alignment */
+.js-plotly-plot .plotly, .js-plotly-plot .main-svg {
+  background: transparent !important;
+}
