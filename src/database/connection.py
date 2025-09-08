@@ -202,7 +202,15 @@ def get_database_manager() -> DatabaseManager:
 
 def init_database() -> None:
     """Initialize database with tables."""
-    db_manager.create_tables()
+    try:
+        # In development with SQLite, drop and recreate to ensure schema matches models
+        db_url = config.get_database_url()
+        if "sqlite" in db_url:
+            db_manager.drop_tables()
+        db_manager.create_tables()
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {e}")
+        raise
 
 
 def get_session():

@@ -268,7 +268,11 @@ def webhook():
                 logger.warning("Missing verification parameters")
                 abort(400, "Missing verification parameters")
             
-            return webhook_handler.handle_verification(verify_token, challenge)
+            try:
+                return webhook_handler.handle_verification(verify_token, challenge)
+            except Unauthorized:
+                # Return 401 on invalid verification token
+                return jsonify({"error": "Unauthorized", "signature": "8598"}), 401
         
         elif request.method == 'POST':
             # Message processing
