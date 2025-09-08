@@ -86,6 +86,21 @@ def get_agent_options() -> List[Dict[str, str]]:
 
     return []
 
+def default_figure(title: str) -> go.Figure:
+    fig = go.Figure()
+    fig.update_layout(
+        title=title,
+        height=320,
+        margin=dict(l=10, r=10, t=40, b=10),
+        autosize=False,
+        template='simple_white',
+        paper_bgcolor='white',
+        plot_bgcolor='white',
+        uirevision='static',
+        transition=dict(duration=0),
+    )
+    return fig
+
 def load_messages() -> pd.DataFrame:
     """Load messages from database with error handling."""
     try:
@@ -272,13 +287,13 @@ def create_layout() -> html.Div:
             # Platform Distribution Chart
             html.Div([
                 html.H4("Platform Distribution", style={'textAlign': 'center', 'marginBottom': '20px'}),
-                dcc.Graph(id='platform-chart', config=PLOTLY_GRAPH_CONFIG, style={'height': '360px'})
+                dcc.Graph(id='platform-chart', config=PLOTLY_GRAPH_CONFIG, style={'height': '360px'}, figure=default_figure("Platform Distribution"))
             ], className='hctc-panel'),
             
             # Agent Performance Chart
             html.Div([
                 html.H4("Agent Performance", style={'textAlign': 'center', 'marginBottom': '20px'}),
-                dcc.Graph(id='agent-chart', config=PLOTLY_GRAPH_CONFIG, style={'height': '360px'})
+                dcc.Graph(id='agent-chart', config=PLOTLY_GRAPH_CONFIG, style={'height': '360px'}, figure=default_figure("Messages by Agent"))
             ], className='hctc-panel'),
         ], className='hctc-row'),
         
@@ -459,6 +474,11 @@ def update_dashboard(n_intervals, refresh_clicks, platform, agent, start_date,
             height=320,
             margin=dict(l=10, r=10, t=40, b=10),
             autosize=False,
+            template='simple_white',
+            paper_bgcolor='white',
+            plot_bgcolor='white',
+            uirevision='static',
+            transition=dict(duration=0),
         )
         platform_fig.update_traces(textposition='inside', textinfo='percent+label', hole=0.3)
         
@@ -476,6 +496,11 @@ def update_dashboard(n_intervals, refresh_clicks, platform, agent, start_date,
             height=320,
             margin=dict(l=10, r=10, t=40, b=10),
             autosize=False,
+            template='simple_white',
+            paper_bgcolor='white',
+            plot_bgcolor='white',
+            uirevision='static',
+            transition=dict(duration=0),
         )
         agent_fig.update_traces(marker=dict(line=dict(width=0)), hovertemplate='%{x}: %{y}<extra></extra>')
         
