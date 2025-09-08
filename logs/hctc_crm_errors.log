@@ -1,0 +1,151 @@
+2025-09-08 11:36:26,812 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('TestAgent', 'WhatsApp', '+1234567890', 'Test message', '2025-09-08 11:36:26.811904', 'text', None, None, 1, 'received', None, '2025-09-08 11:36:26.811907', '2025-09-08 11:36:26.811908')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:27,009 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1111111111', 'Message 1', '2025-09-08 11:36:27.009237', None, None, None, 1, 'received', None, '2025-09-08 11:36:27.009240', '2025-09-08 11:36:27.009241')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:27,178 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1111111111', 'Test message 1', '2025-09-08 11:36:27.178639', None, None, None, 1, 'received', None, '2025-09-08 11:36:27.178642', '2025-09-08 11:36:27.178642')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:27,381 - src.api.webhook_app.WebhookHandler - [31mERROR[0m - Webhook verification error: 401 Unauthorized: Verification failed - Signature: 8598
+2025-09-08 11:36:27,381 - src.api.webhook_app - [31mERROR[0m - Webhook endpoint error: 401 Unauthorized: Verification failed - Signature: 8598
+2025-09-08 11:36:27,387 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1987654321', 'Test WhatsApp message', '2025-09-08 11:36:27.386852', 'text', 'test_message_id', '+1987654321', 1, 'received', '{"phone_number_id": "987654321", "display_phone_number": "+1234567890", "message_type": "text"}', '2025-09-08 11:36:27.386854', '2025-09-08 11:36:27.386855')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:27,387 - src.api.webhook_app.WebhookHandler - [31mERROR[0m - Error processing individual WhatsApp message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1987654321', 'Test WhatsApp message', '2025-09-08 11:36:27.386852', 'text', 'test_message_id', '+1987654321', 1, 'received', '{"phone_number_id": "987654321", "display_phone_number": "+1234567890", "message_type": "text"}', '2025-09-08 11:36:27.386854', '2025-09-08 11:36:27.386855')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:27,387 - src.api.webhook_app.WebhookHandler - [31mERROR[0m - Error processing WhatsApp message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1987654321', 'Test WhatsApp message', '2025-09-08 11:36:27.386852', 'text', 'test_message_id', '+1987654321', 1, 'received', '{"phone_number_id": "987654321", "display_phone_number": "+1234567890", "message_type": "text"}', '2025-09-08 11:36:27.386854', '2025-09-08 11:36:27.386855')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:27,387 - src.api.webhook_app - [31mERROR[0m - Webhook processing error: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1987654321', 'Test WhatsApp message', '2025-09-08 11:36:27.386852', 'text', 'test_message_id', '+1987654321', 1, 'received', '{"phone_number_id": "987654321", "display_phone_number": "+1234567890", "message_type": "text"}', '2025-09-08 11:36:27.386854', '2025-09-08 11:36:27.386855')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:27,392 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'Facebook', '123456789', 'Test Facebook message', '2025-09-08 11:36:27.392403', 'text', 'test_message_id', '123456789', 1, 'received', '{"recipient_id": "987654321", "message_type": "text"}', '2025-09-08 11:36:27.392406', '2025-09-08 11:36:27.392407')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:27,392 - src.api.webhook_app.WebhookHandler - [31mERROR[0m - Error processing individual Facebook message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'Facebook', '123456789', 'Test Facebook message', '2025-09-08 11:36:27.392403', 'text', 'test_message_id', '123456789', 1, 'received', '{"recipient_id": "987654321", "message_type": "text"}', '2025-09-08 11:36:27.392406', '2025-09-08 11:36:27.392407')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:27,392 - src.api.webhook_app.WebhookHandler - [31mERROR[0m - Error processing Facebook message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'Facebook', '123456789', 'Test Facebook message', '2025-09-08 11:36:27.392403', 'text', 'test_message_id', '123456789', 1, 'received', '{"recipient_id": "987654321", "message_type": "text"}', '2025-09-08 11:36:27.392406', '2025-09-08 11:36:27.392407')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:27,392 - src.api.webhook_app - [31mERROR[0m - Webhook processing error: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'Facebook', '123456789', 'Test Facebook message', '2025-09-08 11:36:27.392403', 'text', 'test_message_id', '123456789', 1, 'received', '{"recipient_id": "987654321", "message_type": "text"}', '2025-09-08 11:36:27.392406', '2025-09-08 11:36:27.392407')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:27,397 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1111111111', 'Incoming message 1', '2025-09-08 11:36:27.397580', None, None, None, 1, 'received', None, '2025-09-08 11:36:27.397582', '2025-09-08 11:36:27.397583')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:27,580 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1111111111', 'Hello, how can I help?', '2025-09-08 11:36:27.580556', None, None, None, 1, 'received', None, '2025-09-08 11:36:27.580559', '2025-09-08 11:36:27.580559')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:27,759 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1111111111', 'Order number 12345', '2025-09-08 11:36:27.759107', None, None, None, 1, 'received', None, '2025-09-08 11:36:27.759110', '2025-09-08 11:36:27.759111')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:27,927 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1987654321', 'I need help with my order #12345', '2025-09-08 11:36:27.927021', 'text', 'workflow_test_msg', '+1987654321', 1, 'received', '{"phone_number_id": "987654321", "display_phone_number": "+1234567890", "message_type": "text"}', '2025-09-08 11:36:27.927023', '2025-09-08 11:36:27.927024')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:27,927 - src.api.webhook_app.WebhookHandler - [31mERROR[0m - Error processing individual WhatsApp message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1987654321', 'I need help with my order #12345', '2025-09-08 11:36:27.927021', 'text', 'workflow_test_msg', '+1987654321', 1, 'received', '{"phone_number_id": "987654321", "display_phone_number": "+1234567890", "message_type": "text"}', '2025-09-08 11:36:27.927023', '2025-09-08 11:36:27.927024')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:27,927 - src.api.webhook_app.WebhookHandler - [31mERROR[0m - Error processing WhatsApp message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1987654321', 'I need help with my order #12345', '2025-09-08 11:36:27.927021', 'text', 'workflow_test_msg', '+1987654321', 1, 'received', '{"phone_number_id": "987654321", "display_phone_number": "+1234567890", "message_type": "text"}', '2025-09-08 11:36:27.927023', '2025-09-08 11:36:27.927024')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:27,927 - src.api.webhook_app - [31mERROR[0m - Webhook processing error: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1987654321', 'I need help with my order #12345', '2025-09-08 11:36:27.927021', 'text', 'workflow_test_msg', '+1987654321', 1, 'received', '{"phone_number_id": "987654321", "display_phone_number": "+1234567890", "message_type": "text"}', '2025-09-08 11:36:27.927023', '2025-09-08 11:36:27.927024')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:48,159 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('TestAgent', 'WhatsApp', '+1234567890', 'Test message', '2025-09-08 11:36:48.159469', 'text', None, None, 1, 'received', None, '2025-09-08 11:36:48.159472', '2025-09-08 11:36:48.159473')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:48,360 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1111111111', 'Message 1', '2025-09-08 11:36:48.359654', None, None, None, 1, 'received', None, '2025-09-08 11:36:48.359656', '2025-09-08 11:36:48.359657')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:48,541 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1111111111', 'Test message 1', '2025-09-08 11:36:48.541474', None, None, None, 1, 'received', None, '2025-09-08 11:36:48.541479', '2025-09-08 11:36:48.541482')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:48,717 - src.api.webhook_app.WebhookHandler - [31mERROR[0m - Webhook verification error: 401 Unauthorized: Verification failed - Signature: 8598
+2025-09-08 11:36:48,717 - src.api.webhook_app - [31mERROR[0m - Webhook endpoint error: 401 Unauthorized: Verification failed - Signature: 8598
+2025-09-08 11:36:48,722 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1987654321', 'Test WhatsApp message', '2025-09-08 11:36:48.722399', 'text', 'test_message_id', '+1987654321', 1, 'received', '{"phone_number_id": "987654321", "display_phone_number": "+1234567890", "message_type": "text"}', '2025-09-08 11:36:48.722402', '2025-09-08 11:36:48.722403')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:48,722 - src.api.webhook_app.WebhookHandler - [31mERROR[0m - Error processing individual WhatsApp message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1987654321', 'Test WhatsApp message', '2025-09-08 11:36:48.722399', 'text', 'test_message_id', '+1987654321', 1, 'received', '{"phone_number_id": "987654321", "display_phone_number": "+1234567890", "message_type": "text"}', '2025-09-08 11:36:48.722402', '2025-09-08 11:36:48.722403')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:48,722 - src.api.webhook_app.WebhookHandler - [31mERROR[0m - Error processing WhatsApp message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1987654321', 'Test WhatsApp message', '2025-09-08 11:36:48.722399', 'text', 'test_message_id', '+1987654321', 1, 'received', '{"phone_number_id": "987654321", "display_phone_number": "+1234567890", "message_type": "text"}', '2025-09-08 11:36:48.722402', '2025-09-08 11:36:48.722403')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:48,722 - src.api.webhook_app - [31mERROR[0m - Webhook processing error: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1987654321', 'Test WhatsApp message', '2025-09-08 11:36:48.722399', 'text', 'test_message_id', '+1987654321', 1, 'received', '{"phone_number_id": "987654321", "display_phone_number": "+1234567890", "message_type": "text"}', '2025-09-08 11:36:48.722402', '2025-09-08 11:36:48.722403')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:48,728 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'Facebook', '123456789', 'Test Facebook message', '2025-09-08 11:36:48.728027', 'text', 'test_message_id', '123456789', 1, 'received', '{"recipient_id": "987654321", "message_type": "text"}', '2025-09-08 11:36:48.728030', '2025-09-08 11:36:48.728031')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:48,728 - src.api.webhook_app.WebhookHandler - [31mERROR[0m - Error processing individual Facebook message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'Facebook', '123456789', 'Test Facebook message', '2025-09-08 11:36:48.728027', 'text', 'test_message_id', '123456789', 1, 'received', '{"recipient_id": "987654321", "message_type": "text"}', '2025-09-08 11:36:48.728030', '2025-09-08 11:36:48.728031')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:48,728 - src.api.webhook_app.WebhookHandler - [31mERROR[0m - Error processing Facebook message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'Facebook', '123456789', 'Test Facebook message', '2025-09-08 11:36:48.728027', 'text', 'test_message_id', '123456789', 1, 'received', '{"recipient_id": "987654321", "message_type": "text"}', '2025-09-08 11:36:48.728030', '2025-09-08 11:36:48.728031')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:48,728 - src.api.webhook_app - [31mERROR[0m - Webhook processing error: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'Facebook', '123456789', 'Test Facebook message', '2025-09-08 11:36:48.728027', 'text', 'test_message_id', '123456789', 1, 'received', '{"recipient_id": "987654321", "message_type": "text"}', '2025-09-08 11:36:48.728030', '2025-09-08 11:36:48.728031')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:48,733 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1111111111', 'Incoming message 1', '2025-09-08 11:36:48.733168', None, None, None, 1, 'received', None, '2025-09-08 11:36:48.733171', '2025-09-08 11:36:48.733172')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:48,902 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1111111111', 'Hello, how can I help?', '2025-09-08 11:36:48.902357', None, None, None, 1, 'received', None, '2025-09-08 11:36:48.902360', '2025-09-08 11:36:48.902360')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:49,097 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1111111111', 'Order number 12345', '2025-09-08 11:36:49.097268', None, None, None, 1, 'received', None, '2025-09-08 11:36:49.097271', '2025-09-08 11:36:49.097272')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:49,272 - src.services.message_service.MessageService - [31mERROR[0m - Failed to log message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1987654321', 'I need help with my order #12345', '2025-09-08 11:36:49.272234', 'text', 'workflow_test_msg', '+1987654321', 1, 'received', '{"phone_number_id": "987654321", "display_phone_number": "+1234567890", "message_type": "text"}', '2025-09-08 11:36:49.272237', '2025-09-08 11:36:49.272238')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:49,272 - src.api.webhook_app.WebhookHandler - [31mERROR[0m - Error processing individual WhatsApp message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1987654321', 'I need help with my order #12345', '2025-09-08 11:36:49.272234', 'text', 'workflow_test_msg', '+1987654321', 1, 'received', '{"phone_number_id": "987654321", "display_phone_number": "+1234567890", "message_type": "text"}', '2025-09-08 11:36:49.272237', '2025-09-08 11:36:49.272238')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:49,272 - src.api.webhook_app.WebhookHandler - [31mERROR[0m - Error processing WhatsApp message: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1987654321', 'I need help with my order #12345', '2025-09-08 11:36:49.272234', 'text', 'workflow_test_msg', '+1987654321', 1, 'received', '{"phone_number_id": "987654321", "display_phone_number": "+1234567890", "message_type": "text"}', '2025-09-08 11:36:49.272237', '2025-09-08 11:36:49.272238')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:36:49,272 - src.api.webhook_app - [31mERROR[0m - Webhook processing error: (sqlite3.OperationalError) table messages has no column named created_at
+[SQL: INSERT INTO messages (agent, platform, recipient, content, timestamp, message_type, message_id, sender_id, is_incoming, status, extra_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)]
+[parameters: ('Agent1', 'WhatsApp', '+1987654321', 'I need help with my order #12345', '2025-09-08 11:36:49.272234', 'text', 'workflow_test_msg', '+1987654321', 1, 'received', '{"phone_number_id": "987654321", "display_phone_number": "+1234567890", "message_type": "text"}', '2025-09-08 11:36:49.272237', '2025-09-08 11:36:49.272238')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8) - Signature: 8598
+2025-09-08 11:38:06,337 - src.api.webhook_app.WebhookHandler - [31mERROR[0m - Webhook verification error: 401 Unauthorized: Verification failed - Signature: 8598
+2025-09-08 11:38:06,337 - src.api.webhook_app - [31mERROR[0m - Webhook endpoint error: 401 Unauthorized: Verification failed - Signature: 8598
+2025-09-08 11:39:13,703 - src.api.webhook_app.WebhookHandler - [31mERROR[0m - Webhook verification error: 401 Unauthorized: Verification failed - Signature: 8598
