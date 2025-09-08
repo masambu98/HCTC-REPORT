@@ -176,6 +176,11 @@ def create_layout() -> html.Div:
             html.Div([
                 html.H3(id='active-agents', children='0', style={'margin': '0', 'color': '#7c3aed'}),
                 html.P('Active Agents', style={'margin': '5px 0 0 0'})
+            ], className='hctc-card', style={'textAlign': 'center', 'padding': '20px', 'flex': '1', 'marginRight': '10px'}),
+
+            html.Div([
+                html.H3(id='available-agents', children='0', style={'margin': '0', 'color': '#58a618'}),
+                html.P('Available Now', style={'margin': '5px 0 0 0'})
             ], className='hctc-card', style={'textAlign': 'center', 'padding': '20px', 'flex': '1'}),
         ], className='hctc-stats', style={'display': 'flex', 'flexWrap': 'wrap', 'marginBottom': '20px'}),
         
@@ -308,6 +313,7 @@ def apply_filters(df: pd.DataFrame, platform: str, agent: str, start_date: date,
      Output('incoming-messages', 'children'),
      Output('outgoing-messages', 'children'),
      Output('active-agents', 'children'),
+     Output('available-agents', 'children'),
      Output('platform-chart', 'figure'),
      Output('agent-chart', 'figure')],
     [Input('refresh-interval', 'n_intervals'),
@@ -376,6 +382,19 @@ def update_dashboard(n_intervals, refresh_clicks, platform, agent, start_date,
         incoming_count = len(filtered_df[filtered_df['is_incoming'] == True])
         outgoing_count = len(filtered_df[filtered_df['is_incoming'] == False])
         active_agents = len(working_df['agent_display'].unique())
+        # Compute availability for distinct agent names present in the filtered data
+        distinct_agent_names = [a for a in working_df.get('agent', pd.Series(dtype=str)).dropna().unique()]
+        available_count = 0
+        try:
+            for a in distinct_agent_names:
+                try:
+                    info = message_service.get_agent_availability(str(a))
+                    if info.get('available'):
+                        available_count += 1
+                except Exception:
+                    pass
+        except Exception:
+            available_count = 0
         
         # Cisco color palette for charts
         CISCO_COLORS = ['#00bceb', '#0d274d', '#58a618', '#7c3aed', '#dc2626', '#0284c7', '#14b8a6', '#f59e0b']
@@ -414,7 +433,7 @@ def update_dashboard(n_intervals, refresh_clicks, platform, agent, start_date,
         )
         
         return (table_data.to_dict('records'), str(total_messages), 
-                str(incoming_count), str(outgoing_count), str(active_agents),
+                str(incoming_count), str(outgoing_count), str(active_agents), str(available_count),
                 platform_fig, agent_fig)
         
     except Exception as e:

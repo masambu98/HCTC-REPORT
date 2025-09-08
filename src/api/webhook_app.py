@@ -633,6 +633,22 @@ def agent_handled_daily_excel():
         return jsonify({"error": "internal_error", "signature": "8598"}), 500
 
 
+@app.route('/team/schedules/availability', methods=['GET'])
+def schedules_availability():
+    """Get current availability for a list of agents. Query: agents=Agent1,Agent2"""
+    try:
+        names = (request.args.get('agents') or '').split(',')
+        names = [n.strip() for n in names if n.strip()]
+        if not names:
+            return jsonify({"error": "agents required", "signature": "8598"}), 400
+        svc = get_message_service()
+        result = [svc.get_agent_availability(a) for a in names]
+        return jsonify({"data": result, "signature": "8598"}), 200
+    except Exception as e:
+        logger.error(f"/team/schedules/availability error: {e}")
+        return jsonify({"error": "internal_error", "signature": "8598"}), 500
+
+
 @app.route('/reports/agent-replies', methods=['GET'])
 def agent_replies_report():
     """

@@ -13,7 +13,7 @@ from sqlalchemy import func, desc, and_, or_
 import logging
 import json
 
-from ..database import Message, Agent, Conversation, get_db_session
+from ..database import Message, Agent, Conversation, AgentSchedule, AgentLeave, get_db_session
 from ..config import config
 
 logger = logging.getLogger(__name__)
@@ -372,6 +372,44 @@ class MessageService:
         except Exception as e:
             self.logger.error(f"Failed to get conversation threads: {e}")
             raise
+
+    # Schedule and leave helpers
+    def is_agent_on_leave(self, agent: str, moment: datetime) -> bool:
+        """Return True if agent is on approved leave covering the given moment."""
+        try:
+            with get_db_session() as session:
+                q = session.query(AgentLeave).filter(
+                    AgentLeave.agent == agent,
+                    AgentLeave.status == 'approved',
+                    AgentLeave.start_date <= moment,
+                    AgentLeave.end_date >= moment,
+                )
+                return session.query(q.exists()).scalar() is True
+        except Exception as e:
+            self.logger.error(f"is_agent_on_leave error: {e}")
+            return False
+
+    def is_agent_scheduled(self, agent: str, moment: datetime) -> bool:
+        """Return True if agent has a schedule covering the given moment."""
+        try:
+            with get_db_session() as session:
+                q = session.query(AgentSchedule).filter(
+                    AgentSchedule.agent == agent,
+                    AgentSchedule.shift_start <= moment,
+                    AgentSchedule.shift_end >= moment,
+                )
+                return session.query(q.exists()).scalar() is True
+        except Exception as e:
+            self.logger.error(f"is_agent_scheduled error: {e}")
+            return False
+
+    def get_agent_availability(self, agent: str, moment: Optional[datetime] = None) -> Dict[str, Any]:
+        """Compute agent availability state at the given moment."""
+        now = moment or datetime.now(timezone.utc)
+        on_leave = self.is_agent_on_leave(agent, now)
+        scheduled = self.is_agent_scheduled(agent, now)
+        available = scheduled and not on_leave
+        return {"agent": agent, "available": available, "scheduled": scheduled, "on_leave": on_leave, "at": now.isoformat()}
     
     def search_messages(
         self,

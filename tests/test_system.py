@@ -22,6 +22,7 @@ from src.services import get_message_service
 from src.api.webhook_app import app
 from src.config import config
 from src.utils.agents import extract_initials_and_strip
+from src.database import AgentSchedule, AgentLeave, get_db_session
 
 
 class TestDatabase:
@@ -362,6 +363,11 @@ class TestIntegration:
         init_database()
         self.client = app.test_client()
         self.message_service = get_message_service()
+        # Seed one schedule for Agent1 now
+        from datetime import datetime, timedelta, timezone as _tz
+        now = datetime.now(_tz.utc)
+        with get_db_session() as s:
+            s.add(AgentSchedule(agent="Agent1", date=now, shift_start=now - timedelta(hours=1), shift_end=now + timedelta(hours=7), role="Agent"))
     
     def test_complete_whatsapp_workflow(self):
         """Test complete WhatsApp message workflow."""
@@ -431,6 +437,10 @@ class TestIntegration:
         resp = self.client.get('/reports/agent-handled-daily-excel', query_string={"agent": "Agent1"})
         assert resp.status_code == 200
         assert resp.headers.get('Content-Type', '').startswith('application/vnd.openxmlformats-officedocument')
+
+        # Availability endpoint check
+        resp2 = self.client.get('/team/schedules/availability', query_string={"agents": "Agent1"})
+        assert resp2.status_code == 200
     
     def test_error_handling(self):
         """Test error handling and recovery."""
