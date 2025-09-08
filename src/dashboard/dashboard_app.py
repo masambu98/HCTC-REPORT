@@ -42,6 +42,15 @@ app.title = "HCTC-CRM Analytics Dashboard - Signature: 8598"
 # Get message service
 message_service = get_message_service()
 
+# Reusable Plotly graph config to prevent scroll zoom and stabilize layout
+PLOTLY_GRAPH_CONFIG: Dict[str, Any] = {
+    "scrollZoom": False,
+    "doubleClick": "reset",
+    "displayModeBar": "hover",
+    "responsive": False,
+    "staticPlot": False,
+}
+
 # Webhook base URL for sending messages
 WEBHOOK_BASE_URL = os.getenv("WEBHOOK_BASE_URL")
 if not WEBHOOK_BASE_URL:
@@ -273,14 +282,14 @@ def create_layout() -> html.Div:
             # Platform Distribution Chart
             html.Div([
                 html.H4("Platform Distribution", style={'textAlign': 'center', 'marginBottom': '20px'}),
-                dcc.Graph(id='platform-chart')
+                dcc.Graph(id='platform-chart', config=PLOTLY_GRAPH_CONFIG, style={'height': '360px'})
             ], style={'flex': '1', 'marginRight': '10px', 'background': 'white', 
                      'padding': '20px', 'borderRadius': '10px', 'boxShadow': '0 2px 10px rgba(0,0,0,0.1)'}),
             
             # Agent Performance Chart
             html.Div([
                 html.H4("Agent Performance", style={'textAlign': 'center', 'marginBottom': '20px'}),
-                dcc.Graph(id='agent-chart')
+                dcc.Graph(id='agent-chart', config=PLOTLY_GRAPH_CONFIG, style={'height': '360px'})
             ], style={'flex': '1', 'background': 'white', 'padding': '20px', 
                      'borderRadius': '10px', 'boxShadow': '0 2px 10px rgba(0,0,0,0.1)'}),
         ], style={'display': 'flex', 'marginBottom': '20px'}),
@@ -458,7 +467,12 @@ def update_dashboard(n_intervals, refresh_clicks, platform, agent, start_date,
             title="Message Distribution by Platform",
             color_discrete_sequence=px.colors.qualitative.Set3
         )
-        platform_fig.update_layout(showlegend=True, height=300)
+        platform_fig.update_layout(
+            showlegend=True,
+            height=320,
+            margin=dict(l=10, r=10, t=40, b=10),
+            autosize=False,
+        )
         
         # Agent chart
         agent_counts = filtered_df['agent'].value_counts()
@@ -469,7 +483,12 @@ def update_dashboard(n_intervals, refresh_clicks, platform, agent, start_date,
             color=agent_counts.values,
             color_continuous_scale='Viridis'
         )
-        agent_fig.update_layout(showlegend=False, height=300)
+        agent_fig.update_layout(
+            showlegend=False,
+            height=320,
+            margin=dict(l=10, r=10, t=40, b=10),
+            autosize=False,
+        )
         
         return (table_data.to_dict('records'), str(total_messages), 
                 str(incoming_count), str(outgoing_count), str(active_agents),
