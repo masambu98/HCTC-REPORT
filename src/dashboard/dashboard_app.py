@@ -71,12 +71,10 @@ def create_layout() -> html.Div:
     return html.Div([
         # Header
         html.Div([
-            html.H1("🚀 HCTC-CRM Analytics Dashboard", 
-                   style={'color': '#2c3e50', 'margin': '0', 'textAlign': 'center'}),
-            html.P("Professional Call Center Management - Signature: 8598", 
-                  style={'color': '#7f8c8d', 'textAlign': 'center', 'margin': '5px 0'}),
-        ], style={'background': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
-                 'padding': '20px', 'color': 'white', 'marginBottom': '20px'}),
+            html.H1("HCTC-CRM Analytics Dashboard"),
+            html.P("Professional Call Center Management - Signature: 8598"),
+            html.Div(id='last-updated', className='updated-at', style={'textAlign': 'right'})
+        ], className='hctc-header', style={'padding': '16px 20px', 'marginBottom': '20px', 'borderRadius': '10px'}),
         
         # Control Panel
         html.Div([
@@ -93,7 +91,7 @@ def create_layout() -> html.Div:
                     clearable=False,
                     style={'width': '100%'}
                 ),
-            ], style={'flex': '1', 'minWidth': '200px', 'marginRight': '15px'}),
+            ], style={'flex': '1 1 200px', 'minWidth': '200px', 'marginRight': '12px'}),
             
             html.Div([
                 html.Label("Agent Filter", style={'fontWeight': 'bold'}),
@@ -104,7 +102,7 @@ def create_layout() -> html.Div:
                     clearable=False,
                     style={'width': '100%'}
                 ),
-            ], style={'flex': '1', 'minWidth': '200px', 'marginRight': '15px'}),
+            ], style={'flex': '1 1 200px', 'minWidth': '200px', 'marginRight': '12px'}),
             
             html.Div([
                 html.Label("Date Range", style={'fontWeight': 'bold'}),
@@ -115,7 +113,7 @@ def create_layout() -> html.Div:
                     end_date=date.today(),
                     style={'width': '100%'}
                 ),
-            ], style={'flex': '1', 'minWidth': '260px', 'marginRight': '15px'}),
+            ], style={'flex': '1 1 260px', 'minWidth': '260px', 'marginRight': '12px'}),
             
             html.Div([
                 html.Label("Search Messages", style={'fontWeight': 'bold'}),
@@ -126,7 +124,7 @@ def create_layout() -> html.Div:
                     debounce=True,
                     style={'width': '100%'}
                 ),
-            ], style={'flex': '2', 'minWidth': '300px', 'marginRight': '15px'}),
+            ], style={'flex': '2 1 300px', 'minWidth': '300px', 'marginRight': '12px'}),
             
             html.Div([
                 html.Label("Message Type", style={'fontWeight': 'bold'}),
@@ -139,70 +137,60 @@ def create_layout() -> html.Div:
                     value=['incoming'],
                     style={'marginTop': '5px'}
                 ),
-            ], style={'flex': '1', 'minWidth': '200px'}),
-        ], style={'display': 'flex', 'flexWrap': 'wrap', 'marginBottom': '20px', 
-                 'padding': '20px', 'background': '#ecf0f1', 'borderRadius': '10px'}),
+            ], style={'flex': '1 1 200px'}),
+        ], className='hctc-controls', style={'display': 'flex', 'flexWrap': 'wrap', 'marginBottom': '20px', 
+                 'padding': '16px'}),
         
         # Action Buttons
         html.Div([
             html.Button('🔄 Refresh Data', id='refresh-btn', n_clicks=0,
-                       style={'marginRight': '10px', 'padding': '10px 20px', 
-                             'background': '#3498db', 'color': 'white', 'border': 'none', 
-                             'borderRadius': '5px', 'cursor': 'pointer'}),
+                       className='btn btn-refresh',
+                       style={'marginRight': '10px'}),
             html.Button('📊 Export CSV', id='export-btn', n_clicks=0,
-                       style={'marginRight': '10px', 'padding': '10px 20px', 
-                             'background': '#27ae60', 'color': 'white', 'border': 'none', 
-                             'borderRadius': '5px', 'cursor': 'pointer'}),
+                       className='btn btn-export',
+                       style={'marginRight': '10px'}),
             html.Button('📈 Generate Report', id='report-btn', n_clicks=0,
-                       style={'padding': '10px 20px', 'background': '#e74c3c', 
-                             'color': 'white', 'border': 'none', 'borderRadius': '5px', 
-                             'cursor': 'pointer'}),
+                       className='btn btn-report'),
             dcc.Download(id='download-csv'),
         ], style={'marginBottom': '20px', 'textAlign': 'center'}),
         
         # Statistics Cards
         html.Div([
             html.Div([
-                html.H3(id='total-messages', children='0', style={'margin': '0', 'color': '#2c3e50'}),
-                html.P('Total Messages', style={'margin': '5px 0 0 0', 'color': '#7f8c8d'})
-            ], style={'textAlign': 'center', 'padding': '20px', 'background': 'white', 
-                     'borderRadius': '10px', 'boxShadow': '0 2px 10px rgba(0,0,0,0.1)', 'flex': '1', 'marginRight': '10px'}),
+                html.H3(id='total-messages', children='0', style={'margin': '0'}),
+                html.P('Total Messages', style={'margin': '5px 0 0 0'})
+            ], className='hctc-card', style={'textAlign': 'center', 'padding': '20px', 'flex': '1', 'marginRight': '10px'}),
             
             html.Div([
-                html.H3(id='incoming-messages', children='0', style={'margin': '0', 'color': '#27ae60'}),
-                html.P('Incoming', style={'margin': '5px 0 0 0', 'color': '#7f8c8d'})
-            ], style={'textAlign': 'center', 'padding': '20px', 'background': 'white', 
-                     'borderRadius': '10px', 'boxShadow': '0 2px 10px rgba(0,0,0,0.1)', 'flex': '1', 'marginRight': '10px'}),
+                html.H3(id='incoming-messages', children='0', style={'margin': '0', 'color': '#58a618'}),
+                html.P('Incoming', style={'margin': '5px 0 0 0'})
+            ], className='hctc-card', style={'textAlign': 'center', 'padding': '20px', 'flex': '1', 'marginRight': '10px'}),
             
             html.Div([
-                html.H3(id='outgoing-messages', children='0', style={'margin': '0', 'color': '#e74c3c'}),
-                html.P('Outgoing', style={'margin': '5px 0 0 0', 'color': '#7f8c8d'})
-            ], style={'textAlign': 'center', 'padding': '20px', 'background': 'white', 
-                     'borderRadius': '10px', 'boxShadow': '0 2px 10px rgba(0,0,0,0.1)', 'flex': '1', 'marginRight': '10px'}),
+                html.H3(id='outgoing-messages', children='0', style={'margin': '0', 'color': '#dc2626'}),
+                html.P('Outgoing', style={'margin': '5px 0 0 0'})
+            ], className='hctc-card', style={'textAlign': 'center', 'padding': '20px', 'flex': '1', 'marginRight': '10px'}),
             
             html.Div([
-                html.H3(id='active-agents', children='0', style={'margin': '0', 'color': '#8e44ad'}),
-                html.P('Active Agents', style={'margin': '5px 0 0 0', 'color': '#7f8c8d'})
-            ], style={'textAlign': 'center', 'padding': '20px', 'background': 'white', 
-                     'borderRadius': '10px', 'boxShadow': '0 2px 10px rgba(0,0,0,0.1)', 'flex': '1'}),
-        ], style={'display': 'flex', 'marginBottom': '20px'}),
+                html.H3(id='active-agents', children='0', style={'margin': '0', 'color': '#7c3aed'}),
+                html.P('Active Agents', style={'margin': '5px 0 0 0'})
+            ], className='hctc-card', style={'textAlign': 'center', 'padding': '20px', 'flex': '1'}),
+        ], className='hctc-stats', style={'display': 'flex', 'flexWrap': 'wrap', 'marginBottom': '20px'}),
         
         # Charts Row
         html.Div([
             # Platform Distribution Chart
             html.Div([
                 html.H4("Platform Distribution", style={'textAlign': 'center', 'marginBottom': '20px'}),
-                dcc.Graph(id='platform-chart')
-            ], style={'flex': '1', 'marginRight': '10px', 'background': 'white', 
-                     'padding': '20px', 'borderRadius': '10px', 'boxShadow': '0 2px 10px rgba(0,0,0,0.1)'}),
+                dcc.Graph(id='platform-chart', config={'displayModeBar': False}, style={'height': '280px'})
+            ], className='hctc-panel', style={'flex': '1 1 48%', 'maxWidth': '48%', 'minWidth': '300px', 'marginRight': '10px', 'padding': '20px'}),
             
             # Agent Performance Chart
             html.Div([
                 html.H4("Agent Performance", style={'textAlign': 'center', 'marginBottom': '20px'}),
-                dcc.Graph(id='agent-chart')
-            ], style={'flex': '1', 'background': 'white', 'padding': '20px', 
-                     'borderRadius': '10px', 'boxShadow': '0 2px 10px rgba(0,0,0,0.1)'}),
-        ], style={'display': 'flex', 'marginBottom': '20px'}),
+                dcc.Graph(id='agent-chart', config={'displayModeBar': False}, style={'height': '280px'})
+            ], className='hctc-panel', style={'flex': '1 1 48%', 'maxWidth': '48%', 'minWidth': '300px', 'padding': '20px'}),
+        ], style={'display': 'flex', 'flexWrap': 'wrap', 'gap': '10px', 'marginBottom': '20px'}),
         
         # Messages Table
         html.Div([
@@ -221,35 +209,32 @@ def create_layout() -> html.Div:
                     {'name': 'Direction', 'id': 'is_incoming', 'type': 'text'},
                 ],
                 data=[],
-                page_size=20,
+                page_size=15,
                 filter_action='native',
                 sort_action='native',
                 sort_mode='multi',
                 style_table={'overflowX': 'auto'},
                 style_cell={
                     'textAlign': 'left',
-                    'fontFamily': 'Arial, sans-serif',
-                    'fontSize': '14px',
+                    'fontFamily': 'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial',
+                    'fontSize': '13px',
                     'padding': '10px'
                 },
                 style_header={
-                    'fontWeight': 'bold',
-                    'backgroundColor': '#f8f9fa',
-                    'border': '1px solid #dee2e6'
+                    'fontWeight': 'bold'
                 },
                 style_data_conditional=[
                     {
                         'if': {'filter_query': '{is_incoming} = true'},
-                        'backgroundColor': '#d4edda',
+                        'backgroundColor': '#ecfdf5',
                     },
                     {
                         'if': {'filter_query': '{is_incoming} = false'},
-                        'backgroundColor': '#f8d7da',
+                        'backgroundColor': '#fef2f2',
                     }
                 ]
             )
-        ], style={'background': 'white', 'padding': '20px', 'borderRadius': '10px', 
-                 'boxShadow': '0 2px 10px rgba(0,0,0,0.1)'}),
+        ], className='hctc-table', style={'padding': '20px'}),
         
         # Auto-refresh interval
         dcc.Interval(
@@ -263,7 +248,7 @@ def create_layout() -> html.Div:
             html.P("© 2025 HCTC-CRM Professional Call Center Management - Signature: 8598", 
                   style={'textAlign': 'center', 'color': '#7f8c8d', 'margin': '20px 0 0 0'})
         ])
-    ], style={'padding': '20px', 'backgroundColor': '#f8f9fa', 'minHeight': '100vh'})
+    ], className='hctc-container', style={'padding': '20px', 'minHeight': '100vh'})
 
 
 # Set the layout
@@ -369,26 +354,41 @@ def update_dashboard(n_intervals, refresh_clicks, platform, agent, start_date,
         outgoing_count = len(filtered_df[filtered_df['is_incoming'] == False])
         active_agents = len(filtered_df['agent'].unique())
         
+        # Cisco color palette for charts
+        CISCO_COLORS = ['#00bceb', '#0d274d', '#58a618', '#7c3aed', '#dc2626', '#0284c7', '#14b8a6', '#f59e0b']
+
         # Platform chart
         platform_counts = filtered_df['platform'].value_counts()
         platform_fig = px.pie(
             values=platform_counts.values,
             names=platform_counts.index,
             title="Message Distribution by Platform",
-            color_discrete_sequence=px.colors.qualitative.Set3
+            color_discrete_sequence=CISCO_COLORS
         )
-        platform_fig.update_layout(showlegend=True, height=300)
+        platform_fig.update_layout(
+            showlegend=True,
+            height=280,
+            margin=dict(l=20, r=20, t=20, b=20),
+            font=dict(family='system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial', size=13),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)'
+        )
         
         # Agent chart
         agent_counts = filtered_df['agent'].value_counts()
-        agent_fig = px.bar(
-            x=agent_counts.index,
-            y=agent_counts.values,
-            title="Messages by Agent",
-            color=agent_counts.values,
-            color_continuous_scale='Viridis'
+        bar_colors = [CISCO_COLORS[i % len(CISCO_COLORS)] for i in range(len(agent_counts))]
+        agent_fig = go.Figure(data=[
+            go.Bar(x=list(agent_counts.index), y=list(agent_counts.values), marker_color=bar_colors)
+        ])
+        agent_fig.update_layout(
+            title_text="Messages by Agent",
+            showlegend=False,
+            height=280,
+            margin=dict(l=20, r=20, t=20, b=20),
+            font=dict(family='system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial', size=13),
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)'
         )
-        agent_fig.update_layout(showlegend=False, height=300)
         
         return (table_data.to_dict('records'), str(total_messages), 
                 str(incoming_count), str(outgoing_count), str(active_agents),
@@ -442,3 +442,15 @@ if __name__ == '__main__':
         port=config.dashboard.port,
         debug=config.dashboard.debug
     )
+
+
+# Last Updated timestamp updater
+@app.callback(
+    Output('last-updated', 'children'),
+    [Input('refresh-interval', 'n_intervals'), Input('refresh-btn', 'n_clicks')]
+)
+def update_last_updated(_, __):
+    try:
+        return f"Last Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    except Exception:
+        return "Last Updated: --"
