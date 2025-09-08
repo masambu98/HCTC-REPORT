@@ -1,32 +1,42 @@
-/* Cisco Finesse-inspired Light Theme (non-invasive) - Signature: 8598 */
+/* Cisco Finesse-inspired Theme - Signature: 8598 */
 
 :root {
-  --f-bg: #f4f6f8;             /* light app background */
-  --f-surface: #ffffff;        /* panels */
-  --f-border: #e5e7eb;         /* subtle borders */
-  --f-text: #1f2937;           /* primary text */
-  --f-muted: #6b7280;          /* secondary text */
-  --f-accent: #2563eb;         /* primary blue */
-  --f-accent-2: #10b981;       /* green */
-  --f-accent-3: #ef4444;       /* red */
+  /* Cisco color palette */
+  --cisco-primary: #0d274d;   /* dark blue */
+  --cisco-accent:  #00bceb;   /* cyan */
+  --cisco-green:   #58a618;   /* success */
+  --cisco-red:     #dc2626;   /* warning/error */
+  --cisco-purple:  #7c3aed;   /* modern accent */
+
+  /* UI tokens */
+  --f-bg: #f8fafc;
+  --f-surface: #ffffff;
+  --f-border: #e5e7eb;
+  --f-text: #0f172a;
+  --f-muted: #64748b;
   --f-radius: 10px;
-  --f-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  --f-shadow: 0 6px 18px rgba(0,0,0,0.06);
 }
 
-html, body { background: var(--f-bg) !important; color: var(--f-text); }
+html, body { 
+  background: var(--f-bg) !important; 
+  color: var(--f-text);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
 
 /* Container */
 .hctc-container { background: var(--f-bg) !important; }
 
 /* Header */
 .hctc-header { 
-  background: linear-gradient(180deg, #e8eefc 0%, #ffffff 60%);
-  color: var(--f-text) !important; 
-  border: 1px solid var(--f-border);
+  background: var(--cisco-primary);
+  color: #ffffff !important; 
+  border-bottom: 3px solid var(--cisco-accent);
   box-shadow: var(--f-shadow);
 }
-.hctc-header h1 { color: var(--f-text) !important; }
-.hctc-header p { color: var(--f-muted) !important; }
+.hctc-header h1 { color: #ffffff !important; }
+.hctc-header p { color: #e2e8f0 !important; }
+.hctc-header .updated-at { color: #a7f3d0; font-size: 12px; }
 
 /* Panels and rows */
 .hctc-panel, .hctc-table, .hctc-controls { 
@@ -35,13 +45,18 @@ html, body { background: var(--f-bg) !important; color: var(--f-text); }
   border-radius: var(--f-radius);
   box-shadow: var(--f-shadow);
 }
-.hctc-row { gap: 12px; }
+.hctc-row { display: flex; flex-wrap: wrap; gap: 12px; }
 
 /* Buttons */
-.btn { border-radius: 8px; border: 1px solid transparent; }
-.btn.btn-refresh { background: var(--f-accent); }
-.btn.btn-export  { background: var(--f-accent-2); }
-.btn.btn-report  { background: var(--f-accent-3); }
+.btn { 
+  border-radius: 8px; 
+  border: 1px solid transparent; 
+  color: #ffffff; 
+  padding: 10px 16px; 
+}
+.btn.btn-refresh { background: var(--cisco-accent); }
+.btn.btn-export  { background: var(--cisco-green); }
+.btn.btn-report  { background: var(--cisco-red); }
 .btn:hover { filter: brightness(0.95); }
 
 /* Cards */
@@ -50,7 +65,7 @@ html, body { background: var(--f-bg) !important; color: var(--f-text); }
   border: 1px solid var(--f-border);
   border-radius: var(--f-radius);
 }
-.hctc-stats h3 { color: var(--f-text) !important; }
+.hctc-stats h3 { color: var(--f-text) !important; font-weight: 700; }
 .hctc-stats p { color: var(--f-muted) !important; }
 
 /* DataTable tweaks (base selectors to avoid ID changes) */
@@ -60,13 +75,14 @@ html, body { background: var(--f-bg) !important; color: var(--f-text); }
   border-radius: var(--f-radius) !important;
 }
 .dash-table-container .dash-spreadsheet-container .dash-spreadsheet-container tr th {
-  background: #f8fafc !important; color: var(--f-text) !important;
+  background: var(--cisco-primary) !important; color: #ffffff !important; border-bottom: 2px solid var(--cisco-accent) !important;
 }
 
 /* Inputs */
 .Select-control, .Select-menu-outer, input, textarea { 
   border-radius: 8px !important; 
   border-color: var(--f-border) !important; 
+  font-size: 13px !important;
 }
 
 /* Plotly background alignment */
