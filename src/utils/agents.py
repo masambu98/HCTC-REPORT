@@ -9,8 +9,6 @@ from typing import Optional, Tuple
 
 INITIALS_PATTERN_START = re.compile(r"^\s*\^([A-Za-z]{2,5})\b[:\-\s]*", re.UNICODE)
 INITIALS_PATTERN_END = re.compile(r"[:\-\s]*\^([A-Za-z]{2,5})\s*$", re.UNICODE)
-INITIALS_PATTERN_START_NOCARET = re.compile(r"^\s*([A-Z]{2,5})\b[:\-\s]*", re.UNICODE)
-INITIALS_PATTERN_END_NOCARET = re.compile(r"[:\-\s]*([A-Z]{2,5})\s*$", re.UNICODE)
 
 
 def extract_initials_and_strip(content: str) -> Tuple[str, Optional[str]]:
@@ -38,19 +36,6 @@ def extract_initials_and_strip(content: str) -> Tuple[str, Optional[str]]:
     if match:
         initials = match.group(1).upper()
         cleaned = INITIALS_PATTERN_END.sub("", text, count=1).strip()
-        return cleaned, initials
-
-    # Fallback: allow tokens without caret only when they are ALL CAPS (to avoid false positives)
-    match = INITIALS_PATTERN_START_NOCARET.match(text)
-    if match:
-        initials = match.group(1).upper()
-        cleaned = INITIALS_PATTERN_START_NOCARET.sub("", text, count=1).strip()
-        return cleaned, initials
-
-    match = INITIALS_PATTERN_END_NOCARET.search(text)
-    if match:
-        initials = match.group(1).upper()
-        cleaned = INITIALS_PATTERN_END_NOCARET.sub("", text, count=1).strip()
         return cleaned, initials
 
     return text, None
