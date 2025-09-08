@@ -142,6 +142,26 @@ class MessageService:
             self.logger.error(f"Failed to update conversation: {e}")
             # Don't raise - conversation update is not critical
     
+    def resolve_incoming_agent(self, recipient: str, platform: str) -> str:
+        """Resolve the handling agent for an incoming message based on existing conversation.
+
+        Returns the conversation.agent if found; otherwise returns 'Unassigned'.
+        """
+        try:
+            with get_db_session() as session:
+                conv = session.query(Conversation).filter(
+                    and_(
+                        Conversation.recipient == recipient,
+                        Conversation.platform == platform
+                    )
+                ).order_by(desc(Conversation.last_message_at)).first()
+                if conv and conv.agent:
+                    return conv.agent
+                return "Unassigned"
+        except Exception as e:
+            self.logger.error(f"resolve_incoming_agent error: {e}")
+            return "Unassigned"
+    
     def get_messages(
         self,
         agent: Optional[str] = None,

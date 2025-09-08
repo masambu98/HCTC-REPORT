@@ -155,6 +155,9 @@ class WebhookHandler:
                 content = f"[{message['type'].title()} message]"
                 message_type = message["type"]
             
+            # Resolve handling agent for incoming based on conversation
+            handling_agent = self.message_service.resolve_incoming_agent(sender, "WhatsApp")
+
             # Prepare extra data
             extra_data = {
                 "phone_number_id": value.get("metadata", {}).get("phone_number_id"),
@@ -164,7 +167,7 @@ class WebhookHandler:
             
             # Log message
             self.message_service.log_message(
-                agent="Agent1",  # Default agent - can be customized
+                agent=handling_agent,
                 platform="WhatsApp",
                 recipient=sender,
                 content=sanitize_input(content),
@@ -202,6 +205,9 @@ class WebhookHandler:
                     content = "[Unknown message type]"
                     message_type = "unknown"
                 
+                # Resolve handling agent based on conversation
+                handling_agent = self.message_service.resolve_incoming_agent(sender, "Facebook")
+
                 # Prepare extra data
                 extra_data = {
                     "recipient_id": messaging_event.get("recipient", {}).get("id"),
@@ -210,7 +216,7 @@ class WebhookHandler:
                 
                 # Log message
                 self.message_service.log_message(
-                    agent="Agent1",  # Default agent - can be customized
+                    agent=handling_agent,
                     platform="Facebook",
                     recipient=sender,
                     content=sanitize_input(content),
@@ -545,6 +551,85 @@ def agent_daily_excel():
         )
     except Exception as e:
         logger.error(f"/reports/agent-daily-excel error: {e}")
+        return jsonify({"error": "internal_error", "signature": "8598"}), 500
+
+
+@app.route('/reports/agent-handled-daily-excel', methods=['GET'])
+def agent_handled_daily_excel():
+    """
+    Daily agent handling report (incoming messages associated to agent):
+    - Date
+    - Agent
+    - MessagesHandled (incoming only)
+    - PhoneNumbers (newline-separated unique recipients)
+
+    Query params:
+      - date: YYYY-MM-DD (default today)
+      - agent: Agent name (required)
+    """
+    try:
+        from ..database import get_db_session, Message
+        from datetime import datetime, timedelta
+        import pandas as pd
+        from io import BytesIO
+
+        agent_name = request.args.get('agent')
+        date_str = request.args.get('date')
+
+        if not agent_name:
+            return jsonify({"error": "agent is required", "signature": "8598"}), 400
+
+        if date_str:
+            try:
+                day = datetime.fromisoformat(date_str)
+            except Exception:
+                return jsonify({"error": "invalid date"}), 400
+        else:
+            day = datetime.now()
+
+        start = day.replace(hour=0, minute=0, second=0, microsecond=0)
+        end = start + timedelta(days=1)
+
+        with get_db_session() as s:
+            rows = (
+                s.query(Message)
+                .filter(
+                    Message.agent == agent_name,
+                    Message.is_incoming == True,
+                    Message.timestamp >= start,
+                    Message.timestamp < end,
+                )
+                .all()
+            )
+
+        phone_numbers = []
+        for m in rows:
+            if m.recipient and m.recipient not in phone_numbers:
+                phone_numbers.append(m.recipient)
+
+        df = pd.DataFrame([
+            {
+                "Date": start.strftime('%Y-%m-%d'),
+                "Agent": agent_name,
+                "MessagesHandled": len(rows),
+                "PhoneNumbers": "\n".join(phone_numbers),
+            }
+        ])
+
+        buffer = BytesIO()
+        with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Handled')
+        buffer.seek(0)
+
+        filename = f"agent_handled_{agent_name}_{start.strftime('%Y%m%d')}.xlsx"
+        return send_file(
+            buffer,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+    except Exception as e:
+        logger.error(f"/reports/agent-handled-daily-excel error: {e}")
         return jsonify({"error": "internal_error", "signature": "8598"}), 500
 
 

@@ -416,6 +416,21 @@ class TestIntegration:
         agent_perf = self.message_service.get_agent_performance("Agent1")
         assert agent_perf['total_messages'] >= 1
         assert agent_perf['outgoing_messages'] >= 1
+
+        # Now a new incoming should associate to Agent1 via conversation
+        self.message_service.log_message(
+            agent=self.message_service.resolve_incoming_agent("+1987654321", "WhatsApp"),
+            platform="WhatsApp",
+            recipient="+1987654321",
+            content="Thanks! The issue is delayed delivery",
+            is_incoming=True,
+            status="received"
+        )
+
+        # Request handled report
+        resp = self.client.get('/reports/agent-handled-daily-excel', query_string={"agent": "Agent1"})
+        assert resp.status_code == 200
+        assert resp.headers.get('Content-Type', '').startswith('application/vnd.openxmlformats-officedocument')
     
     def test_error_handling(self):
         """Test error handling and recovery."""
