@@ -21,6 +21,8 @@ from src.database import Message, init_database, get_db_session
 from src.services import get_message_service
 from src.api.webhook_app import app
 from src.config import config
+from src.utils.agents import extract_initials_and_strip
+from src.database import AgentSchedule, AgentLeave, get_db_session
 
 
 class TestDatabase:
@@ -140,6 +142,13 @@ class TestWebhookAPI:
         
         assert response.status_code == 200
         assert response.data.decode() == 'test_challenge'
+
+    def test_extract_initials_utility(self):
+        """Test initials extraction utility."""
+        assert extract_initials_and_strip("^BM Hello") == ("Hello", "BM")
+        assert extract_initials_and_strip("Hello ^bm") == ("Hello", "BM")
+        assert extract_initials_and_strip("^BM: Hello") == ("Hello", "BM")
+        assert extract_initials_and_strip("Hello world") == ("Hello world", None)
     
     def test_webhook_verification_invalid_token(self):
         """Test webhook verification with invalid token."""
@@ -187,6 +196,19 @@ class TestWebhookAPI:
         data = json.loads(response.data)
         assert data['status'] == 'ok'
         assert data['signature'] == '8598'
+
+    def test_send_with_initials_and_excel_report(self):
+        """Test /send parsing initials and daily excel report endpoint."""
+        # Send an outgoing message with initials token
+        payload = {"agent": "Agent1", "to": "+15550001111", "text": "^BM Hello there"}
+        resp = self.client.post('/send', data=json.dumps(payload), content_type='application/json')
+        assert resp.status_code == 200
+
+        # Request daily excel for Agent1
+        resp2 = self.client.get('/reports/agent-daily-excel', query_string={"agent": "Agent1"})
+        assert resp2.status_code == 200
+        # Should be an Excel MIME type
+        assert resp2.headers.get('Content-Type', '').startswith('application/vnd.openxmlformats-officedocument')
     
     def test_facebook_message_processing(self):
         """Test Facebook message processing."""
@@ -341,6 +363,11 @@ class TestIntegration:
         init_database()
         self.client = app.test_client()
         self.message_service = get_message_service()
+        # Seed one schedule for Agent1 now
+        from datetime import datetime, timedelta, timezone as _tz
+        now = datetime.now(_tz.utc)
+        with get_db_session() as s:
+            s.add(AgentSchedule(agent="Agent1", date=now, shift_start=now - timedelta(hours=1), shift_end=now + timedelta(hours=7), role="Agent"))
     
     def test_complete_whatsapp_workflow(self):
         """Test complete WhatsApp message workflow."""
@@ -395,6 +422,25 @@ class TestIntegration:
         agent_perf = self.message_service.get_agent_performance("Agent1")
         assert agent_perf['total_messages'] >= 1
         assert agent_perf['outgoing_messages'] >= 1
+
+        # Now a new incoming should associate to Agent1 via conversation
+        self.message_service.log_message(
+            agent=self.message_service.resolve_incoming_agent("+1987654321", "WhatsApp"),
+            platform="WhatsApp",
+            recipient="+1987654321",
+            content="Thanks! The issue is delayed delivery",
+            is_incoming=True,
+            status="received"
+        )
+
+        # Request handled report
+        resp = self.client.get('/reports/agent-handled-daily-excel', query_string={"agent": "Agent1"})
+        assert resp.status_code == 200
+        assert resp.headers.get('Content-Type', '').startswith('application/vnd.openxmlformats-officedocument')
+
+        # Availability endpoint check
+        resp2 = self.client.get('/team/schedules/availability', query_string={"agents": "Agent1"})
+        assert resp2.status_code == 200
     
     def test_error_handling(self):
         """Test error handling and recovery."""

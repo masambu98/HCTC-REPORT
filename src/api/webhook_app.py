@@ -6,7 +6,7 @@ Enterprise-grade webhook handler for WhatsApp Business API and Facebook Messenge
 with comprehensive error handling, logging, and security features.
 """
 
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify, abort, send_file
 from werkzeug.exceptions import BadRequest, Unauthorized, InternalServerError
 import logging
 import json
@@ -22,6 +22,7 @@ from ..utils.logging import setup_logging
 from ..utils.security import validate_webhook_signature, sanitize_input
 from ..utils.security import is_valid_phone_number
 from ..utils.validators import validate_whatsapp_payload, validate_facebook_payload
+from ..utils import extract_initials_and_strip
 
 # Setup logging
 setup_logging()
@@ -154,6 +155,9 @@ class WebhookHandler:
                 content = f"[{message['type'].title()} message]"
                 message_type = message["type"]
             
+            # Resolve handling agent for incoming based on conversation
+            handling_agent = self.message_service.resolve_incoming_agent(sender, "WhatsApp")
+
             # Prepare extra data
             extra_data = {
                 "phone_number_id": value.get("metadata", {}).get("phone_number_id"),
@@ -163,7 +167,7 @@ class WebhookHandler:
             
             # Log message
             self.message_service.log_message(
-                agent="Agent1",  # Default agent - can be customized
+                agent=handling_agent,
                 platform="WhatsApp",
                 recipient=sender,
                 content=sanitize_input(content),
@@ -201,6 +205,9 @@ class WebhookHandler:
                     content = "[Unknown message type]"
                     message_type = "unknown"
                 
+                # Resolve handling agent based on conversation
+                handling_agent = self.message_service.resolve_incoming_agent(sender, "Facebook")
+
                 # Prepare extra data
                 extra_data = {
                     "recipient_id": messaging_event.get("recipient", {}).get("id"),
@@ -209,7 +216,7 @@ class WebhookHandler:
                 
                 # Log message
                 self.message_service.log_message(
-                    agent="Agent1",  # Default agent - can be customized
+                    agent=handling_agent,
                     platform="Facebook",
                     recipient=sender,
                     content=sanitize_input(content),
@@ -405,6 +412,9 @@ def send_message():
         if not is_valid_phone_number(to):
             return jsonify({"error": "invalid phone number format (E.164)", "signature": "8598"}), 400
 
+        # Extract initials from content and strip token for sending/logging
+        cleaned_text, initials = extract_initials_and_strip(text)
+
         # Call WhatsApp Cloud API
         import requests
         url = f"https://graph.facebook.com/v18.0/{config.whatsapp.phone_id}/messages"
@@ -416,7 +426,7 @@ def send_message():
             "messaging_product": "whatsapp",
             "to": to.lstrip('+'),
             "type": "text",
-            "text": {"body": text},
+            "text": {"body": cleaned_text},
         }
 
         resp = requests.post(url, headers=headers, json=payload, timeout=20)
@@ -434,19 +444,208 @@ def send_message():
             agent=agent,
             platform="WhatsApp",
             recipient=to,
-            content=sanitize_input(text),
+            content=sanitize_input(cleaned_text),
             message_type="text",
             message_id=message_id,
             sender_id=None,
             is_incoming=False,
             status="sent",
-            extra_data={"provider": "cloud_api"}
+            extra_data={"provider": "cloud_api", "agent_initials": initials} if initials else {"provider": "cloud_api"}
         )
 
         return jsonify({"status": "ok", "message_id": message_id, "signature": "8598"}), 200
 
     except Exception as e:
         logger.error(f"/send error: {e}")
+        return jsonify({"error": "internal_error", "signature": "8598"}), 500
+
+
+@app.route('/reports/agent-daily-excel', methods=['GET'])
+def agent_daily_excel():
+    """
+    Generate a daily Excel summary for a given agent containing:
+    - Date
+    - Agent display (INITIALS Name when available)
+    - Messages handled (outgoing only)
+    - Phone numbers handled (single cell, newline-separated)
+
+    Query params:
+      - date: YYYY-MM-DD (default: today in server timezone)
+      - agent: Agent name (required)
+    """
+    try:
+        from ..database import get_db_session, Message
+        from datetime import datetime, timedelta
+        import pandas as pd
+        import json as _json
+        from io import BytesIO
+
+        agent_name = request.args.get('agent')
+        date_str = request.args.get('date')
+
+        if not agent_name:
+            return jsonify({"error": "agent is required", "signature": "8598"}), 400
+
+        if date_str:
+            try:
+                day = datetime.fromisoformat(date_str)
+            except Exception:
+                return jsonify({"error": "invalid date"}), 400
+        else:
+            day = datetime.now()
+
+        start = day.replace(hour=0, minute=0, second=0, microsecond=0)
+        end = start + timedelta(days=1)
+
+        with get_db_session() as s:
+            rows = (
+                s.query(Message)
+                .filter(
+                    Message.agent == agent_name,
+                    Message.is_incoming == False,
+                    Message.timestamp >= start,
+                    Message.timestamp < end,
+                )
+                .all()
+            )
+
+        # Determine initials and phone numbers
+        initials = None
+        phone_numbers = []
+        for m in rows:
+            if m.recipient and m.recipient not in phone_numbers:
+                phone_numbers.append(m.recipient)
+            if not initials and m.extra_data:
+                try:
+                    ed = _json.loads(m.extra_data)
+                    val = (ed or {}).get('agent_initials')
+                    if val:
+                        initials = val
+                except Exception:
+                    pass
+
+        display = f"{initials} {agent_name}".strip() if initials else agent_name
+        messages_handled = len(rows)
+        phones_cell = "\n".join(phone_numbers)
+
+        df = pd.DataFrame([
+            {
+                "Date": start.strftime('%Y-%m-%d'),
+                "Agent": display,
+                "MessagesHandled": messages_handled,
+                "PhoneNumbers": phones_cell,
+            }
+        ])
+
+        buffer = BytesIO()
+        with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Summary')
+        buffer.seek(0)
+
+        filename = f"agent_daily_{agent_name}_{start.strftime('%Y%m%d')}.xlsx"
+        return send_file(
+            buffer,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+    except Exception as e:
+        logger.error(f"/reports/agent-daily-excel error: {e}")
+        return jsonify({"error": "internal_error", "signature": "8598"}), 500
+
+
+@app.route('/reports/agent-handled-daily-excel', methods=['GET'])
+def agent_handled_daily_excel():
+    """
+    Daily agent handling report (incoming messages associated to agent):
+    - Date
+    - Agent
+    - MessagesHandled (incoming only)
+    - PhoneNumbers (newline-separated unique recipients)
+
+    Query params:
+      - date: YYYY-MM-DD (default today)
+      - agent: Agent name (required)
+    """
+    try:
+        from ..database import get_db_session, Message
+        from datetime import datetime, timedelta
+        import pandas as pd
+        from io import BytesIO
+
+        agent_name = request.args.get('agent')
+        date_str = request.args.get('date')
+
+        if not agent_name:
+            return jsonify({"error": "agent is required", "signature": "8598"}), 400
+
+        if date_str:
+            try:
+                day = datetime.fromisoformat(date_str)
+            except Exception:
+                return jsonify({"error": "invalid date"}), 400
+        else:
+            day = datetime.now()
+
+        start = day.replace(hour=0, minute=0, second=0, microsecond=0)
+        end = start + timedelta(days=1)
+
+        with get_db_session() as s:
+            rows = (
+                s.query(Message)
+                .filter(
+                    Message.agent == agent_name,
+                    Message.is_incoming == True,
+                    Message.timestamp >= start,
+                    Message.timestamp < end,
+                )
+                .all()
+            )
+
+        phone_numbers = []
+        for m in rows:
+            if m.recipient and m.recipient not in phone_numbers:
+                phone_numbers.append(m.recipient)
+
+        df = pd.DataFrame([
+            {
+                "Date": start.strftime('%Y-%m-%d'),
+                "Agent": agent_name,
+                "MessagesHandled": len(rows),
+                "PhoneNumbers": "\n".join(phone_numbers),
+            }
+        ])
+
+        buffer = BytesIO()
+        with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Handled')
+        buffer.seek(0)
+
+        filename = f"agent_handled_{agent_name}_{start.strftime('%Y%m%d')}.xlsx"
+        return send_file(
+            buffer,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+    except Exception as e:
+        logger.error(f"/reports/agent-handled-daily-excel error: {e}")
+        return jsonify({"error": "internal_error", "signature": "8598"}), 500
+
+
+@app.route('/team/schedules/availability', methods=['GET'])
+def schedules_availability():
+    """Get current availability for a list of agents. Query: agents=Agent1,Agent2"""
+    try:
+        names = (request.args.get('agents') or '').split(',')
+        names = [n.strip() for n in names if n.strip()]
+        if not names:
+            return jsonify({"error": "agents required", "signature": "8598"}), 400
+        svc = get_message_service()
+        result = [svc.get_agent_availability(a) for a in names]
+        return jsonify({"data": result, "signature": "8598"}), 200
+    except Exception as e:
+        logger.error(f"/team/schedules/availability error: {e}")
         return jsonify({"error": "internal_error", "signature": "8598"}), 500
 
 

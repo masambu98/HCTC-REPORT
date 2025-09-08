@@ -202,3 +202,67 @@ class SystemLog(Base):
 
     def __repr__(self) -> str:
         return f"<SystemLog(id={self.id}, level='{self.level}', message='{self.message[:50]}...')>"
+
+
+class AgentSchedule(Base):
+    """
+    Agent work schedule model.
+    Signature: 8598
+    """
+    __tablename__ = 'agent_schedules'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    agent = Column(String(100), nullable=False, index=True)
+    date = Column(DateTime, nullable=False, index=True)
+    shift_start = Column(DateTime, nullable=False)
+    shift_end = Column(DateTime, nullable=False)
+    role = Column(String(50), nullable=True)  # e.g., "Agent", "TeamLead"
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+    __table_args__ = (
+        Index('idx_schedule_agent_date', 'agent', 'date'),
+    )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'id': self.id,
+            'agent': self.agent,
+            'date': self.date.isoformat() if self.date else None,
+            'shift_start': self.shift_start.isoformat() if self.shift_start else None,
+            'shift_end': self.shift_end.isoformat() if self.shift_end else None,
+            'role': self.role,
+            'notes': self.notes,
+        }
+
+
+class AgentLeave(Base):
+    """
+    Agent leave management model.
+    Signature: 8598
+    """
+    __tablename__ = 'agent_leaves'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    agent = Column(String(100), nullable=False, index=True)
+    start_date = Column(DateTime, nullable=False, index=True)
+    end_date = Column(DateTime, nullable=False, index=True)
+    reason = Column(String(255), nullable=True)
+    status = Column(String(50), nullable=False, default='approved', index=True)  # requested/approved/denied
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
+
+    __table_args__ = (
+        Index('idx_leave_agent_start_end', 'agent', 'start_date', 'end_date'),
+    )
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'id': self.id,
+            'agent': self.agent,
+            'start_date': self.start_date.isoformat() if self.start_date else None,
+            'end_date': self.end_date.isoformat() if self.end_date else None,
+            'reason': self.reason,
+            'status': self.status,
+        }
